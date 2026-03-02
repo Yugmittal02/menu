@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema({
         name: { type: String },
         price: { type: Number }
     }],
+    subcategories: [{ type: String }],
     isBestseller: { type: Boolean, default: false },
     rating: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },

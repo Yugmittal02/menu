@@ -47,7 +47,7 @@ exports.trackOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .select(
-        "status isAccepted acceptedAt createdAt paymentMethod paymentStatus totalAmount items orderType deliveryAddress donationAmount appliedOffer deliveryFee platformFee taxAmount",
+        "status isAccepted acceptedAt createdAt paymentMethod paymentStatus paymentScreenshot totalAmount items orderType deliveryAddress donationAmount appliedOffer deliveryFee platformFee taxAmount",
       )
       .populate("items.product", "name image");
     if (!order) {

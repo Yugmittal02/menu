@@ -67,7 +67,7 @@ const validateOrder = [
     body('orderType')
         .isIn(['Dine-in', 'Takeaway', 'Delivery']).withMessage('Invalid order type'),
     body('paymentMethod')
-        .isIn(['Cash', 'UPI']).withMessage('Invalid payment method'),
+        .isIn(['Cash', 'Online', 'UPI', 'Razorpay']).withMessage('Invalid payment method'),
     handleValidation
 ];
 

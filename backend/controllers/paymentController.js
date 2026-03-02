@@ -61,7 +61,7 @@ exports.createPaymentOrder = async (req, res) => {
         quantity: item.quantity,
         size: item.size,
         addons: item.selectedAddons || item.addons,
-        price: item.price * item.quantity,
+        price: item.price,
       })),
       totalAmount: amount,
       paymentMethod: "Razorpay",

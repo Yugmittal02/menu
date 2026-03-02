@@ -78,6 +78,10 @@ exports.validateCoupon = async (req, res) => {
         let discount = 0;
         if (offer.discountType === 'percentage') {
             discount = (orderTotal * offer.discountValue) / 100;
+            // Cap at maxDiscount if set
+            if (offer.maxDiscount && discount > offer.maxDiscount) {
+                discount = offer.maxDiscount;
+            }
         } else {
             discount = offer.discountValue;
         }

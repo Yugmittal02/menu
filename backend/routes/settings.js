@@ -73,19 +73,7 @@ router.get('/upi/admin', async (req, res) => {
     }
 });
 
-// GET /api/settings/store - Get store config (public)
-router.get('/store', async (req, res) => {
-    try {
-        const settings = await getOrCreateSettings('store_config');
-        res.json({
-            adminPhone: settings.adminPhone,
-            updatedAt: settings.updatedAt
-        });
-    } catch (error) {
-        console.error('Error fetching store settings:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+// NOTE: GET /store route is defined further below with proper isOpen field
 
 // POST /api/settings/verify-password - Verify settings password
 router.post('/verify-password', async (req, res) => {
@@ -157,10 +145,25 @@ router.put('/upi', async (req, res) => {
     }
 });
 
+// GET /api/settings/store - Get store config (public)
+router.get('/store', async (req, res) => {
+    try {
+        const settings = await getOrCreateSettings('store_config');
+        res.json({
+            isOpen: settings.isOpen !== undefined ? settings.isOpen : true,
+            adminPhone: settings.adminPhone || '',
+            updatedAt: settings.updatedAt
+        });
+    } catch (error) {
+        console.error('Error fetching store settings:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // PUT /api/settings/store - Update Store config (requires password)
 router.put('/store', async (req, res) => {
     try {
-        const { adminPhone, password, newPassword } = req.body;
+        const { adminPhone, isOpen, password, newPassword } = req.body;
         
         if (!password) {
             return res.status(400).json({ message: 'Settings password is required' });
@@ -178,6 +181,7 @@ router.put('/store', async (req, res) => {
 
         // Update settings
         if (adminPhone !== undefined) settings.adminPhone = adminPhone.trim();
+        if (isOpen !== undefined) settings.isOpen = isOpen;
         settings.updatedAt = new Date();
         settings.updatedBy = 'admin';
 
@@ -191,7 +195,8 @@ router.put('/store', async (req, res) => {
 
         res.json({
             message: 'Store settings updated successfully',
-            adminPhone: settings.adminPhone
+            adminPhone: settings.adminPhone,
+            isOpen: settings.isOpen
         });
     } catch (error) {
         console.error('Error updating Store settings:', error);

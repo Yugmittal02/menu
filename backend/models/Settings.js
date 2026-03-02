@@ -22,6 +22,10 @@ const SettingsSchema = new mongoose.Schema({
         type: String,
         default: '9876543210'
     },
+    isOpen: {
+        type: Boolean,
+        default: true
+    },
     // Fee Configuration
     platformFee: {
         type: Number,

@@ -12,6 +12,7 @@ const offerSchema = new mongoose.Schema({
     discountValue: { type: Number, required: true },
     code: { type: String, unique: true, uppercase: true },
     minOrderValue: { type: Number, default: 0 },
+    maxDiscount: { type: Number, default: 0 },
     validFrom: { type: Date, default: Date.now },
     validTo: { type: Date },
     isActive: { type: Boolean, default: true },
