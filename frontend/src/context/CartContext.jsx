@@ -45,7 +45,7 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     if (!hasLoadedFromDB.current) return; // Don't sync before initial load
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("customerToken");
     if (!token) return;
 
     // Debounce: wait 1s after last change before syncing
@@ -62,7 +62,7 @@ export const CartProvider = ({ children }) => {
   // Load cart from DB on mount if user is logged in
   useEffect(() => {
     const loadCartFromDB = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("customerToken");
       if (!token) {
         hasLoadedFromDB.current = true;
         return;
@@ -123,7 +123,7 @@ export const CartProvider = ({ children }) => {
       console.error("Failed to clear cart from localStorage:", e);
     }
     // Also clear in DB
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("customerToken");
     if (token) {
       syncCartToDB([]).catch(err => console.error("Cart clear sync error:", err));
     }

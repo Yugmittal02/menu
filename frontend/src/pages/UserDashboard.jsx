@@ -161,7 +161,7 @@ const UserDashboard = () => {
                 <div className="p-1 rounded-2xl" style={{ background: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #F3F0EB' }}>
                     {[
                         { icon: <FaShoppingBag size={16} color="#F97316" />, label: 'My Orders', sub: `${orders.length} orders placed`, action: () => { const el = document.getElementById('recent-orders-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, bg: '#FFF7ED' },
-                        { icon: <FaMapMarkerAlt size={16} color="#3B82F6" />, label: 'Saved Address', sub: 'Manage delivery address', action: () => navigate('/address/add'), bg: '#EFF6FF' },
+                        { icon: <FaMapMarkerAlt size={16} color="#3B82F6" />, label: 'Saved Address', sub: 'Manage delivery address', action: () => navigate('/cart'), bg: '#EFF6FF' },
                         { icon: <FaHeart size={16} color="#EF4444" />, label: 'Favorites', sub: 'Browse your liked items', action: () => navigate('/menu'), bg: '#FEF2F2' },
                         { icon: <FaPercent size={14} color="#22C55E" />, label: 'Offers & Coupons', sub: 'Available discounts', action: () => navigate('/menu'), bg: '#F0FDF4' },
                     ].map((item, i) => (

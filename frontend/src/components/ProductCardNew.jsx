@@ -1,16 +1,19 @@
 import React, { useState, useMemo, memo, useCallback } from 'react';
 import { FaHeart, FaRegHeart, FaStar, FaShoppingCart, FaCheck, FaBolt } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import CustomizeModal from './CustomizeModal';
 
 const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = false }) => {
     const { addToCart } = useCart();
     const [added, setAdded] = useState(false);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const [showCustomize, setShowCustomize] = useState(false);
 
     const safeProduct = useMemo(() => ({
         _id: product?._id || '',
         name: product?.name || 'Product',
         price: Number(product?.price || product?.basePrice) || 0,
+        basePrice: Number(product?.basePrice || product?.price) || 0,
         originalPrice: Number(product?.originalPrice || product?.mrp) || Number(product?.price || product?.basePrice) || 0,
         image: product?.image || '',
         rating: product?.rating || '4.5',
@@ -20,7 +23,11 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
         isBestseller: product?.isBestseller || false,
         category: product?.category || '',
         weight: product?.weight || '500g',
+        sizes: Array.isArray(product?.sizes) ? product.sizes : [],
+        addons: Array.isArray(product?.addons) ? product.addons : [],
     }), [product]);
+
+    const hasOptions = safeProduct.sizes.length > 0 || safeProduct.addons.length > 0;
 
     const discountPercent = useMemo(() => {
         if (safeProduct.originalPrice > safeProduct.price) {
@@ -32,16 +39,32 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
     const handleAdd = useCallback((e) => {
         e?.stopPropagation();
         if (!safeProduct.isAvailable || added) return;
+
+        if (hasOptions) {
+            setShowCustomize(true);
+            return;
+        }
+
         addToCart({
             _id: safeProduct._id,
             name: safeProduct.name,
             price: safeProduct.price,
+            basePrice: safeProduct.basePrice,
             image: safeProduct.image,
         });
         setAdded(true);
         onAddSuccess?.();
         setTimeout(() => setAdded(false), 2000);
-    }, [safeProduct, added, addToCart, onAddSuccess]);
+    }, [safeProduct, added, addToCart, onAddSuccess, hasOptions]);
+
+    const handleCustomizeClose = useCallback((didAdd = false) => {
+        setShowCustomize(false);
+        if (didAdd) {
+            setAdded(true);
+            setTimeout(() => setAdded(false), 2000);
+            onAddSuccess?.();
+        }
+    }, [onAddSuccess]);
 
     const toggleWishlist = useCallback((e) => {
         e?.stopPropagation();
@@ -49,6 +72,7 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
     }, []);
 
     return (
+        <>
         <div
             className={`group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 ${!safeProduct.isAvailable ? 'opacity-60' : 'hover:shadow-lg active:scale-[0.98]'}`}
             style={{
@@ -151,13 +175,22 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
                             </>
                         ) : (
                             <>
-                                <span>ADD</span>
+                                <span>{hasOptions ? 'ADD +' : 'ADD'}</span>
                             </>
                         )}
                     </button>
                 </div>
             </div>
         </div>
+
+        {/* Customize Modal */}
+        {showCustomize && (
+            <CustomizeModal
+                product={safeProduct}
+                onClose={handleCustomizeClose}
+            />
+        )}
+        </>
     );
 });
 

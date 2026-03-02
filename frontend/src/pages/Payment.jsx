@@ -50,8 +50,10 @@ const Payment = () => {
   const [isRedirecting, setIsRedirecting] = useState(false); // Show loader while redirecting
   const isProcessingRef = useRef(false); // Ref for immediate check
 
-  // Delivery — flat ₹30
-  const deliveryFee = orderType === "Delivery" ? 30 : 0;
+  // Fee settings & delivery state
+  const [feeSettings, setFeeSettings] = useState({ freeDeliveryThreshold: 500, deliveryFeeBase: 30 });
+  const [freeDelivery, setFreeDelivery] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState(orderType === "Delivery" ? 30 : 0);
 
   // Offer states
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -210,6 +212,23 @@ const Payment = () => {
       console.error("Error loading fee settings:", error);
     }
   };
+
+  // Recalculate delivery fee when feeSettings, subtotal, or orderType changes
+  useEffect(() => {
+    if (orderType !== "Delivery") {
+      setDeliveryFee(0);
+      setFreeDelivery(false);
+      return;
+    }
+    // If subtotal meets free delivery threshold, waive the fee
+    if (subtotal >= feeSettings.freeDeliveryThreshold) {
+      setDeliveryFee(0);
+      setFreeDelivery(true);
+    } else {
+      setDeliveryFee(feeSettings.deliveryFeeBase || 30);
+      setFreeDelivery(false);
+    }
+  }, [feeSettings, subtotal, orderType]);
 
   const calculateDelivery = async () => {
     try {

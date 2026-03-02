@@ -212,10 +212,14 @@ const OrderSuccess = () => {
 
     setRatingLoading(true);
     try {
+      // Get the first product ID from the order items for the rating
+      const firstProductId = orderData?.items?.[0]?.product?._id || orderData?.items?.[0]?.product;
+
       await submitRating({
-        order: orderId,
+        orderId: orderId,
+        productId: firstProductId,
         customer: {
-          name: state.customerName || "Customer",
+          name: state?.customerName || "Customer",
           phone: "N/A",
         },
         rating,

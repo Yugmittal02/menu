@@ -51,7 +51,7 @@ const SideCart = memo(({ isOpen, onClose }) => {
 
   if (!isOpen && !isAnimating) return null;
 
-  const freeDeliveryThreshold = 299;
+  const freeDeliveryThreshold = 500;
   const remainingForFreeDelivery = Math.max(0, freeDeliveryThreshold - total);
 
   return (

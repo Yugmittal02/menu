@@ -8,6 +8,7 @@ import AdminMenu from "../components/admin/AdminMenu";
 import AdminCustomers from "../components/admin/AdminCustomers";
 import AdminStats from "../components/admin/AdminStats";
 import AdminOffers from "../components/admin/AdminOffers";
+import AdminSettings from "../components/admin/AdminSettings";
 import ProductFormModal from "../components/admin/ProductFormModal";
 import OfferFormModal from "../components/admin/OfferFormModal";
 
@@ -22,6 +23,8 @@ import {
   acceptOrder,
   fetchAllOffersAdmin,
   deleteOffer,
+  getStoreSettings,
+  updateStoreSettings,
 } from "../services/api";
 
 import { useAuth } from "../context/AuthContext";
@@ -48,10 +51,14 @@ const AdminDashboard = () => {
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
 
+  // Settings
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true });
+
   useEffect(() => {
     loadOrders();
     loadProducts();
     loadOffers();
+    loadStoreSettings();
     const interval = setInterval(loadOrders, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -77,6 +84,13 @@ const AdminDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
+  const loadStoreSettings = async () => {
+    try {
+      const { data } = await getStoreSettings();
+      setStoreSettings(data);
+    } catch (err) { console.error(err); }
+  };
+
   const handleDeleteOffer = async (id) => {
     if (window.confirm("Delete this offer?")) {
       try {
@@ -87,7 +101,14 @@ const AdminDashboard = () => {
   };
   // Order handlers
   const handleUpdateStatus = async (id, status) => {
-    try { await updateOrderStatus(id, status); loadOrders(); }
+    try {
+      await updateOrderStatus(id, status);
+      loadOrders();
+      // Auto-switch to customers tab when order is delivered
+      if (status === 'Delivered') {
+        setActiveTab('customers');
+      }
+    }
     catch (err) { alert("Failed to update status"); }
   };
 
@@ -130,8 +151,10 @@ const AdminDashboard = () => {
 
   // Settings
   const handleUpdateStore = async () => {
-    try { await updateStoreSettings(storeSettings); alert("Settings updated!"); }
-    catch (e) { alert("Error updating settings"); }
+    const password = prompt("Enter settings password to save:");
+    if (!password) return;
+    try { await updateStoreSettings({ ...storeSettings, password }); alert("Settings updated!"); }
+    catch (e) { alert(e.response?.data?.message || "Error updating settings"); }
   };
 
   const handleLogout = () => {

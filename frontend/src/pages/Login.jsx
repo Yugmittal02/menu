@@ -167,7 +167,7 @@ const Login = () => {
                         </form>
 
                         <p className="text-xs text-center text-[#9CA3AF] mt-8">
-                            By continuing, you adhere to our <span className="underline cursor-pointer hover:text-[#C97B4B]">Terms</span> and <span className="underline cursor-pointer hover:text-[#C97B4B]">Privacy Policy</span>.
+                            By continuing, you adhere to our <span onClick={() => navigate('/terms')} className="underline cursor-pointer hover:text-[#C97B4B]">Terms</span> and <span onClick={() => navigate('/privacy')} className="underline cursor-pointer hover:text-[#C97B4B]">Privacy Policy</span>.
                         </p>
                     </div>
                 </div>

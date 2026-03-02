@@ -67,7 +67,7 @@ const OfferFormModal = ({ offer, onClose, onSave }) => {
 
     return (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end justify-center">
-            <div className="bg-white w-full rounded-t-3xl shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <div className="bg-white w-full rounded-t-3xl shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto" style={{ paddingBottom: '100px' }}>
                 <div className="p-5 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
                     <h3 className="text-xl font-bold text-gray-800">{isEditing ? 'Edit Offer' : 'Create Offer'}</h3>
                     <button onClick={onClose} className="text-gray-400 text-2xl">

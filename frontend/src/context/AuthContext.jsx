@@ -110,6 +110,7 @@ export const AuthProvider = ({ children }) => {
         // Clear customer session
         sessionStorage.removeItem('customer');
         localStorage.removeItem('customer');
+        localStorage.removeItem('customerToken');
         setCustomer(null);
         
         // Clear admin session

@@ -169,27 +169,8 @@ const Cart = () => {
         </div>
       </div>
 
-      {/* Free Delivery Progress */}
-      {orderType === 'Delivery' && total < feeSettings.minOrderForFreeDelivery && (
-        <div className="mx-4 mt-4 p-4 rounded-2xl animate-fade-in"
-          style={{ background: 'linear-gradient(135deg, #FEF3E2 0%, #FDE8CC 100%)', border: '2px solid #C97B4B' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <FaGift color="#C97B4B" />
-            <span className="text-sm font-semibold" style={{ color: '#C97B4B' }}>
-              Add ₹{(Number(feeSettings.minOrderForFreeDelivery) - Number(total) || 0).toFixed(0)} more for FREE Delivery!
-            </span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: '#E8E3DB' }}>
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${(total / feeSettings.minOrderForFreeDelivery) * 100}%`,
-                background: 'linear-gradient(90deg, #C97B4B 0%, #D4B87A 100%)'
-              }}
-            />
-          </div>
-        </div>
-      )}
+
+
 
       {/* Delivery Address */}
       {orderType === 'Delivery' && (

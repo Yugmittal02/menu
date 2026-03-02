@@ -130,7 +130,7 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-4 overflow-y-auto space-y-4"
-                    style={{ maxHeight: 'calc(92vh - 60px)', paddingBottom: '100px' }}>
+                    style={{ maxHeight: 'calc(92vh - 60px)', paddingBottom: '24px' }}>
 
                     {/* Image Upload */}
                     <div>

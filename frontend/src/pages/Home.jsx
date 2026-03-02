@@ -74,7 +74,7 @@ const DeliveryStrip = () => (
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             {[
                 { icon: '⚡', title: 'Express Delivery', sub: 'Within 2 hours' },
-                { icon: '🎁', title: 'Free Delivery', sub: 'Above ₹299' },
+                { icon: '🎁', title: 'Free Delivery', sub: 'Above ₹500' },
                 { icon: '💯', title: '100% Fresh', sub: 'Baked Daily' }
             ].map((item, i) => (
                 <div key={i} style={{
@@ -371,26 +371,26 @@ const Home = () => {
                     {/* Filter Chips - Mobile Scrollable */}
                     <div className="filter-chips">
                         <button
-                            className={`filter-chip ${activeCategory === 'cake' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('cake')}
+                            className={`filter-chip ${activeCategory === 'Cake' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('Cake')}
                         >
                             🎂 Cakes
                         </button>
                         <button
-                            className={`filter-chip ${activeCategory === 'fastfood' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('fastfood')}
+                            className={`filter-chip ${activeCategory === 'Fastfood' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('Fastfood')}
                         >
                             🍔 Fast Food
                         </button>
                         <button
-                            className={`filter-chip ${activeCategory === 'beverages' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('beverages')}
+                            className={`filter-chip ${activeCategory === 'Beverages' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('Beverages')}
                         >
                             ☕ Drinks
                         </button>
                         <button
-                            className={`filter-chip ${activeCategory === 'flower' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('flower')}
+                            className={`filter-chip ${activeCategory === 'Flowers' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('Flowers')}
                         >
                             🌸 Flowers
                         </button>

@@ -56,7 +56,12 @@ const OffersDropdown = ({ orderTotal = 0, onOfferSelect, selectedOffer = null })
     const discountValue = Number(offer.discountValue) || 0;
 
     if (offer.discountType === 'percentage') {
-      return Math.round(total * (discountValue / 100));
+      let discount = Math.round(total * (discountValue / 100));
+      // Cap at maxDiscount if set
+      if (offer.maxDiscount && discount > offer.maxDiscount) {
+        discount = offer.maxDiscount;
+      }
+      return discount;
     }
     return discountValue;
   }, [orderTotal]);
