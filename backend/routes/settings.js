@@ -387,4 +387,57 @@ router.post('/calculate-delivery', async (req, res) => {
     }
 });
 
+// ====== HOMEPAGE BADGES ======
+// Uses a separate 'app_config' collection to avoid Settings schema enum constraints
+
+const DEFAULT_BADGES = [
+    { icon: '⚡', title: 'Express Delivery', subtitle: 'Within 2 hours', enabled: true },
+    { icon: '🌿', title: '100% Eggless', subtitle: 'Pure Vegetarian', enabled: true },
+    { icon: '🎁', title: 'Free Delivery', subtitle: 'Above ₹500', enabled: true }
+];
+
+// GET /api/settings/homepage-badges
+router.get('/homepage-badges', async (req, res) => {
+    try {
+        const mongoose = require('mongoose');
+        const configCol = mongoose.connection.db.collection('app_config');
+        let doc = await configCol.findOne({ key: 'homepage_badges' });
+        
+        if (!doc) {
+            // Seed default
+            await configCol.insertOne({ key: 'homepage_badges', value: DEFAULT_BADGES, updatedAt: new Date() });
+            doc = { value: DEFAULT_BADGES };
+        }
+        
+        res.json(doc.value);
+    } catch (error) {
+        console.error('Error fetching homepage badges:', error);
+        res.json(DEFAULT_BADGES); // Fallback to defaults on error
+    }
+});
+
+// PUT /api/settings/homepage-badges (admin only, requires auth)
+router.put('/homepage-badges', async (req, res) => {
+    try {
+        const { badges } = req.body;
+        if (!Array.isArray(badges)) {
+            return res.status(400).json({ message: 'badges must be an array' });
+        }
+
+        const mongoose = require('mongoose');
+        const configCol = mongoose.connection.db.collection('app_config');
+        
+        await configCol.updateOne(
+            { key: 'homepage_badges' },
+            { $set: { value: badges, updatedAt: new Date() } },
+            { upsert: true }
+        );
+        
+        res.json({ message: 'Homepage badges updated', badges });
+    } catch (error) {
+        console.error('Error updating homepage badges:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;

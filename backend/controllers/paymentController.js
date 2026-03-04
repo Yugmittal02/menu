@@ -3,6 +3,13 @@ const razorpay = require("../config/razorpay");
 const Order = require("../models/Order");
 const User = require("../models/User");
 
+// Razorpay mode check
+const RAZORPAY_KEY = process.env.RAZORPAY_KEY_ID || '';
+if (RAZORPAY_KEY.startsWith('rzp_test_')) {
+  console.warn('⚠️  WARNING: Razorpay is running in TEST MODE.');
+  console.warn('   Update RAZORPAY_KEY_ID to rzp_live_* before going live.');
+}
+
 // Create Razorpay order for payment
 exports.createPaymentOrder = async (req, res) => {
   try {
@@ -449,9 +456,11 @@ exports.manualVerifyPayment = async (req, res) => {
 // Get Razorpay key for frontend
 exports.getRazorpayKey = async (req, res) => {
   try {
+    const keyId = process.env.RAZORPAY_KEY_ID;
     res.json({
-      keyId: process.env.RAZORPAY_KEY_ID,
-      isConfigured: !!process.env.RAZORPAY_KEY_ID,
+      keyId,
+      isConfigured: !!keyId,
+      mode: keyId?.startsWith('rzp_live_') ? 'live' : 'test'
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching Razorpay configuration" });
