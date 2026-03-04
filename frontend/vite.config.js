@@ -19,6 +19,12 @@ export default defineConfig({
   server: {
     host: true, // Allow external access (mobile)
     port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      }
+    }
   },
   // Performance optimizations for faster loading
   build: {

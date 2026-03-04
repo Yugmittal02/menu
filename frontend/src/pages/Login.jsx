@@ -48,7 +48,7 @@ const Login = () => {
 
             {/* Back Button */}
             <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate('/')}
                 className="absolute top-6 left-6 z-20 w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-all shadow-lg"
                 style={{ background: '#FFFFFF', border: '2px solid #E8E3DB' }}
                 aria-label="Go back"
@@ -95,12 +95,12 @@ const Login = () => {
 
                     <div className="relative z-10 mt-12 flex gap-4">
                         <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl flex-1 border border-white/20">
-                            <h3 className="text-2xl font-bold text-[#C97B4B]">500+</h3>
-                            <p className="text-xs text-white/60 uppercase tracking-wider mt-1">Daily Happy Customers</p>
+                            <h3 className="text-2xl font-bold text-[#C97B4B]">🌿</h3>
+                            <p className="text-xs text-white/60 uppercase tracking-wider mt-1">100% Eggless</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl flex-1 border border-white/20">
-                            <h3 className="text-2xl font-bold text-[#C97B4B]">4.9★</h3>
-                            <p className="text-xs text-white/60 uppercase tracking-wider mt-1">Average Rating</p>
+                            <h3 className="text-2xl font-bold text-[#C97B4B]">2002</h3>
+                            <p className="text-xs text-white/60 uppercase tracking-wider mt-1">Serving Since</p>
                         </div>
                     </div>
                 </div>

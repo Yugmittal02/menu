@@ -1,11 +1,49 @@
-import React from 'react';
-import { FaStore, FaToggleOn, FaToggleOff, FaLock } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaStore, FaToggleOn, FaToggleOff, FaLock, FaSave, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { getHomepageBadges, updateHomepageBadges } from '../../services/api';
 
 const AdminSettings = ({
     storeSettings,
     setStoreSettings,
     onUpdateStore,
 }) => {
+    // Homepage Badges state
+    const [badges, setBadges] = useState([]);
+    const [badgesOpen, setBadgesOpen] = useState(false);
+    const [badgesSaving, setBadgesSaving] = useState(false);
+    const [badgesMsg, setBadgesMsg] = useState('');
+
+    useEffect(() => {
+        const loadBadges = async () => {
+            try {
+                const { data } = await getHomepageBadges();
+                setBadges(data);
+            } catch (err) {
+                console.error('Failed to load badges:', err);
+            }
+        };
+        loadBadges();
+    }, []);
+
+    const handleBadgeChange = (index, field, value) => {
+        const updated = [...badges];
+        updated[index] = { ...updated[index], [field]: value };
+        setBadges(updated);
+    };
+
+    const saveBadges = async () => {
+        setBadgesSaving(true);
+        setBadgesMsg('');
+        try {
+            await updateHomepageBadges(badges);
+            setBadgesMsg('✅ Saved!');
+            setTimeout(() => setBadgesMsg(''), 2000);
+        } catch (err) {
+            setBadgesMsg('❌ Failed to save');
+        }
+        setBadgesSaving(false);
+    };
+
     return (
         <div className="px-4 pb-24 pt-4 space-y-5">
             <h2 className="text-2xl font-black" style={{ color: '#1C1C1C' }}>Settings</h2>
@@ -46,6 +84,87 @@ const AdminSettings = ({
                 >
                     Save Settings
                 </button>
+            </div>
+
+            {/* Homepage Badges — Collapsible */}
+            <div className="rounded-2xl overflow-hidden"
+                style={{ background: '#FFFFFF', border: '2px solid #E8E3DB', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <button
+                    onClick={() => setBadgesOpen(!badgesOpen)}
+                    className="w-full p-5 flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-xl">🏷️</span>
+                        <div className="text-left">
+                            <h3 className="font-bold" style={{ color: '#1C1C1C' }}>Homepage Badges</h3>
+                            <p className="text-xs" style={{ color: '#A0998F' }}>Express Delivery, Eggless, Free Delivery pills</p>
+                        </div>
+                    </div>
+                    {badgesOpen ? <FaChevronUp style={{ color: '#A0998F' }} /> : <FaChevronDown style={{ color: '#A0998F' }} />}
+                </button>
+
+                {badgesOpen && (
+                    <div className="px-5 pb-5 space-y-4">
+                        {badges.map((badge, i) => (
+                            <div key={i} className="p-4 rounded-xl space-y-3"
+                                style={{ background: '#FAF7F2', border: '1px solid #E8E3DB' }}>
+                                <div className="flex items-center gap-3">
+                                    {/* Emoji input */}
+                                    <input
+                                        type="text"
+                                        maxLength={2}
+                                        value={badge.icon}
+                                        onChange={(e) => handleBadgeChange(i, 'icon', e.target.value)}
+                                        className="w-12 h-10 text-center text-xl rounded-lg outline-none"
+                                        style={{ background: '#FFFFFF', border: '1px solid #E8E3DB' }}
+                                    />
+                                    {/* Title */}
+                                    <input
+                                        type="text"
+                                        value={badge.title}
+                                        onChange={(e) => handleBadgeChange(i, 'title', e.target.value)}
+                                        placeholder="Title"
+                                        className="flex-1 px-3 py-2 rounded-lg text-sm font-medium outline-none"
+                                        style={{ background: '#FFFFFF', border: '1px solid #E8E3DB', color: '#1C1C1C' }}
+                                    />
+                                    {/* Toggle */}
+                                    <button
+                                        onClick={() => handleBadgeChange(i, 'enabled', !badge.enabled)}
+                                        className="text-2xl"
+                                        style={{ color: badge.enabled ? '#16A34A' : '#A0998F' }}
+                                    >
+                                        {badge.enabled ? <FaToggleOn /> : <FaToggleOff />}
+                                    </button>
+                                </div>
+                                {/* Subtitle */}
+                                <input
+                                    type="text"
+                                    value={badge.subtitle}
+                                    onChange={(e) => handleBadgeChange(i, 'subtitle', e.target.value)}
+                                    placeholder="Subtitle"
+                                    className="w-full px-3 py-2 rounded-lg text-xs outline-none"
+                                    style={{ background: '#FFFFFF', border: '1px solid #E8E3DB', color: '#7E7E7E' }}
+                                />
+                            </div>
+                        ))}
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={saveBadges}
+                                disabled={badgesSaving}
+                                className="flex-1 py-3 text-white font-bold rounded-xl active:scale-[0.98] flex items-center justify-center gap-2"
+                                style={{ background: 'linear-gradient(135deg, #C97B4B 0%, #E8956A 100%)', boxShadow: '0 4px 12px rgba(201,123,75,0.3)' }}
+                            >
+                                <FaSave size={12} /> {badgesSaving ? 'Saving...' : 'Save Badges'}
+                            </button>
+                            {badgesMsg && (
+                                <span className="text-sm font-bold" style={{ color: badgesMsg.includes('✅') ? '#16A34A' : '#DC2626' }}>
+                                    {badgesMsg}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Delivery Info */}

@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaThLarge, FaUser, FaPhoneAlt } from 'react-icons/fa';
+import { FaHome, FaThLarge, FaUser, FaClipboardList } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
+import { fetchMyOrders } from '../services/api';
 
 const BottomNav = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { customer } = useAuth();
+    const [activeOrderCount, setActiveOrderCount] = useState(0);
+
+    useEffect(() => {
+        if (!customer) {
+            setActiveOrderCount(0);
+            return;
+        }
+
+        const loadActiveOrders = async () => {
+            try {
+                const { data } = await fetchMyOrders();
+                const active = (data || []).filter(o =>
+                    o.status !== 'Delivered' && o.status !== 'Cancelled'
+                );
+                setActiveOrderCount(active.length);
+            } catch (err) {
+                // Silent fail — just hide badge
+            }
+        };
+
+        loadActiveOrders();
+        const interval = setInterval(loadActiveOrders, 60000);
+        return () => clearInterval(interval);
+    }, [customer]);
 
     // Don't show on specific pages
     const hiddenPaths = ['/', '/login', '/signup', '/admin', '/payment'];
@@ -15,8 +42,8 @@ const BottomNav = () => {
     const navItems = [
         { path: '/menu', icon: FaHome, label: 'Home' },
         { path: '/categories', icon: FaThLarge, label: 'Categories' },
+        { path: '/dashboard', icon: FaClipboardList, label: 'Orders', showBadge: true },
         { path: '/dashboard', icon: FaUser, label: 'Profile' },
-        { path: '/contact', icon: FaPhoneAlt, label: 'Contact' },
     ];
 
     return (
@@ -31,8 +58,11 @@ const BottomNav = () => {
             }}
         >
             <div className="flex justify-around items-center px-2 pt-3 pb-4">
-                {navItems.map((item) => {
-                    const isActive = location.pathname === item.path;
+                {navItems.map((item, idx) => {
+                    const isActive = location.pathname === item.path && (
+                        item.label !== 'Orders' && item.label !== 'Profile' || 
+                        (item.label === 'Profile')
+                    );
                     const Icon = item.icon;
 
                     return (
@@ -43,7 +73,7 @@ const BottomNav = () => {
                             style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                             <div
-                                className="transition-all duration-300"
+                                className="transition-all duration-300 relative"
                                 style={{
                                     padding: '8px',
                                     borderRadius: '12px',
@@ -53,14 +83,33 @@ const BottomNav = () => {
                             >
                                 <Icon
                                     size={20}
-                                    color={isActive ? '#E8956A' : '#A0A0A0'}
+                                    color={isActive ? '#E8956A' : '#8B7355'}
                                 />
+                                {/* Orders badge */}
+                                {item.showBadge && activeOrderCount > 0 && (
+                                    <span
+                                        className="absolute flex items-center justify-center font-bold text-white"
+                                        style={{
+                                            top: '2px',
+                                            right: '0px',
+                                            minWidth: '16px',
+                                            height: '16px',
+                                            borderRadius: '8px',
+                                            background: '#E53935',
+                                            fontSize: '9px',
+                                            padding: '0 3px',
+                                            boxShadow: '0 1px 4px rgba(229,57,53,0.4)'
+                                        }}
+                                    >
+                                        {activeOrderCount > 9 ? '9+' : activeOrderCount}
+                                    </span>
+                                )}
                             </div>
                             <span
                                 style={{
                                     fontSize: '10px',
                                     fontWeight: isActive ? 700 : 500,
-                                    color: isActive ? '#E8956A' : '#A0A0A0',
+                                    color: isActive ? '#E8956A' : '#8B7355',
                                     marginTop: '1px'
                                 }}
                             >

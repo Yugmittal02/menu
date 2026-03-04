@@ -6,7 +6,9 @@ import {
     FaTruck,
     FaMapMarkerAlt,
     FaExternalLinkAlt,
-    FaClipboardList
+    FaClipboardList,
+    FaPhoneAlt,
+    FaTimesCircle
 } from 'react-icons/fa';
 
 const AdminOrders = ({
@@ -126,7 +128,16 @@ const AdminOrders = ({
                                         )}
                                     </div>
                                     <p className="font-semibold text-sm mt-0.5" style={{ color: '#1C1C1C' }}>{order.user?.name}</p>
-                                    <p className="text-xs" style={{ color: '#A0998F' }}>{order.orderType} • {order.paymentMethod}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        {order.user?.phone && (
+                                            <a href={`tel:${order.user.phone}`}
+                                                className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-lg active:scale-95"
+                                                style={{ background: '#DCFCE7', color: '#16A34A' }}>
+                                                <FaPhoneAlt size={9} /> {order.user.phone}
+                                            </a>
+                                        )}
+                                        <span className="text-xs" style={{ color: '#A0998F' }}>{order.orderType} • {order.paymentMethod}</span>
+                                    </div>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-2xl font-black" style={{ color: '#C97B4B' }}>₹{order.totalAmount}</p>
@@ -183,13 +194,22 @@ const AdminOrders = ({
                             <div className="space-y-3">
                                 {order.status === "Pending" && !order.isAccepted && (
                                     order.paymentMethod === "Cash" || order.paymentStatus === "Paid" ? (
-                                        <button
-                                            onClick={() => onAcceptOrder(order._id)}
-                                            className="w-full py-3.5 text-white font-bold rounded-xl active:scale-[0.98] flex items-center justify-center gap-2"
-                                            style={{ background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', boxShadow: '0 4px 16px rgba(22, 163, 74, 0.3)' }}
-                                        >
-                                            <FaCheckCircle /> Accept Order
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => onAcceptOrder(order._id)}
+                                                className="flex-1 py-3.5 text-white font-bold rounded-xl active:scale-[0.98] flex items-center justify-center gap-2 text-sm"
+                                                style={{ background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', boxShadow: '0 4px 16px rgba(22, 163, 74, 0.3)' }}
+                                            >
+                                                <FaCheckCircle /> Accept
+                                            </button>
+                                            <button
+                                                onClick={() => onUpdateStatus(order._id, 'Cancelled')}
+                                                className="py-3.5 px-5 font-bold rounded-xl active:scale-[0.98] flex items-center justify-center gap-2 text-sm"
+                                                style={{ background: '#FEE2E2', color: '#DC2626', border: '2px solid #FECACA' }}
+                                            >
+                                                <FaTimesCircle /> Reject
+                                            </button>
+                                        </div>
                                     ) : (
                                         <div className="w-full py-3 font-bold rounded-xl text-center text-sm flex items-center justify-center gap-2"
                                             style={{ background: '#FEF9C3', color: '#A16207', border: '2px solid #FDE68A' }}>
@@ -209,29 +229,42 @@ const AdminOrders = ({
                                 )}
 
                                 {/* Status Progression */}
-                                <div className="grid grid-cols-4 gap-2 pt-2" style={{ borderTop: '2px solid #F5F0E8' }}>
-                                    {['Pending', 'Preparing', 'Ready', 'Delivered'].map((status) => {
+                                <div className="flex items-center pt-3" style={{ borderTop: '2px solid #F5F0E8' }}>
+                                    {['Pending', 'Preparing', 'Ready', 'Delivered'].map((status, idx, arr) => {
                                         const sConf = statusConfig[status];
                                         const SIcon = sConf.icon;
+                                        const statusIdx = arr.indexOf(order.status);
+                                        const thisIdx = idx;
+                                        const isPast = thisIdx < statusIdx;
                                         const isActive = order.status === status;
                                         const isDisabled = (status !== "Pending" && !order.isAccepted);
 
                                         return (
-                                            <button
-                                                key={status}
-                                                onClick={() => onUpdateStatus(order._id, status)}
-                                                disabled={isDisabled}
-                                                className="flex flex-col items-center justify-center p-2 rounded-xl transition-all"
-                                                style={isActive
-                                                    ? { background: sConf.color, color: '#FFFFFF', boxShadow: `0 4px 12px ${sConf.color}30` }
-                                                    : isDisabled
-                                                        ? { opacity: 0.3, background: '#FAF7F2', cursor: 'not-allowed' }
-                                                        : { background: '#FAF7F2', color: '#A0998F' }
-                                                }
-                                            >
-                                                <SIcon size={14} className="mb-1" />
-                                                <span className="text-[10px] font-bold">{status === 'Preparing' ? 'Prep' : status}</span>
-                                            </button>
+                                            <React.Fragment key={status}>
+                                                <button
+                                                    onClick={() => onUpdateStatus(order._id, status)}
+                                                    disabled={isDisabled}
+                                                    className="flex flex-col items-center justify-center transition-all relative"
+                                                    style={{ flex: '0 0 auto', opacity: isDisabled ? 0.3 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                                                >
+                                                    <div className="w-9 h-9 rounded-full flex items-center justify-center mb-1"
+                                                        style={isActive
+                                                            ? { background: sConf.color, color: '#FFFFFF', boxShadow: `0 3px 10px ${sConf.color}40` }
+                                                            : isPast
+                                                                ? { background: sConf.bg, color: sConf.color }
+                                                                : { background: '#FAF7F2', color: '#A0998F' }
+                                                        }>
+                                                        <SIcon size={14} />
+                                                    </div>
+                                                    <span className="text-[9px] font-bold" style={{ color: isActive ? sConf.color : '#A0998F' }}>
+                                                        {status === 'Preparing' ? 'Prep' : status === 'Delivered' ? 'Done' : status}
+                                                    </span>
+                                                </button>
+                                                {idx < arr.length - 1 && (
+                                                    <div className="flex-1 h-0.5 mx-1 mt-[-12px] rounded-full"
+                                                        style={{ background: isPast ? sConf.color : '#E8E3DB' }} />
+                                                )}
+                                            </React.Fragment>
                                         );
                                     })}
                                 </div>

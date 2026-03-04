@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaArrowRight, FaUtensils, FaStar, FaTruck, FaClock } from 'react-icons/fa';
+import { FaArrowRight, FaUtensils, FaMapMarkerAlt, FaLeaf } from 'react-icons/fa';
 
 const Welcome = () => {
     const navigate = useNavigate();
@@ -199,21 +199,21 @@ const Welcome = () => {
                     </button>
                 </div>
 
-                {/* Trust Badges */}
+                {/* Trust Badges — Real, verifiable info */}
                 <div className={`flex items-center gap-4 mt-8 transition-all duration-700 delay-500 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
                     <div className="flex items-center gap-1.5">
-                        <FaStar size={12} color="#FBBF24" />
-                        <span className="text-xs font-semibold" style={{ color: '#92400E' }}>4.8 Rating</span>
+                        <FaLeaf size={12} color="#22C55E" />
+                        <span className="text-xs font-semibold" style={{ color: '#92400E' }}>100% Eggless</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-orange-300"></div>
                     <div className="flex items-center gap-1.5">
-                        <FaTruck size={12} color="#F97316" />
-                        <span className="text-xs font-semibold" style={{ color: '#92400E' }}>Free Delivery</span>
+                        <FaMapMarkerAlt size={12} color="#F97316" />
+                        <span className="text-xs font-semibold" style={{ color: '#92400E' }}>Bharatpur</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-orange-300"></div>
                     <div className="flex items-center gap-1.5">
-                        <FaClock size={12} color="#F97316" />
-                        <span className="text-xs font-semibold" style={{ color: '#92400E' }}>30 Min</span>
+                        <span className="text-xs" style={{ color: '#F97316' }}>🍰</span>
+                        <span className="text-xs font-semibold" style={{ color: '#92400E' }}>Since 2002</span>
                     </div>
                 </div>
             </div>

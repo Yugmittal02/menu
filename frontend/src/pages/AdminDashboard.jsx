@@ -8,6 +8,7 @@ import AdminMenu from "../components/admin/AdminMenu";
 import AdminCustomers from "../components/admin/AdminCustomers";
 import AdminStats from "../components/admin/AdminStats";
 import AdminOffers from "../components/admin/AdminOffers";
+import AdminCategories from "../components/admin/AdminCategories";
 import AdminSettings from "../components/admin/AdminSettings";
 import ProductFormModal from "../components/admin/ProductFormModal";
 import OfferFormModal from "../components/admin/OfferFormModal";
@@ -211,6 +212,10 @@ const AdminDashboard = () => {
           onToggleAvailability={(p) => setShowStockConfirm(p)}
           onClearAll={handleClearAll}
         />
+      )}
+
+      {activeTab === 'categories' && (
+        <AdminCategories />
       )}
 
       {activeTab === 'customers' && (

@@ -6,13 +6,15 @@ import {
     FaChartLine,
     FaSignOutAlt,
     FaTag,
-    FaCog
+    FaCog,
+    FaLayerGroup
 } from 'react-icons/fa';
 
 const AdminLayout = ({ activeTab, setActiveTab, onLogout, children }) => {
     const tabs = [
         { id: "orders", label: "Orders", icon: FaClipboardList },
         { id: "menu", label: "Menu", icon: FaUtensils },
+        { id: "categories", label: "Categories", icon: FaLayerGroup },
         { id: "offers", label: "Offers", icon: FaTag },
         { id: "customers", label: "Users", icon: FaUsers },
         { id: "revenue", label: "Stats", icon: FaChartLine },

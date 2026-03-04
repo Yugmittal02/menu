@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaExclamationTriangle } from 'react-icons/fa';
+import { fetchCategories } from '../../services/api';
 
 const AdminMenu = ({
     products,
@@ -11,11 +12,46 @@ const AdminMenu = ({
 }) => {
     const [search, setSearch] = useState('');
     const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [catLoading, setCatLoading] = useState(true);
+    const [activeCatFilter, setActiveCatFilter] = useState('All');
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.category.toLowerCase().includes(search.toLowerCase())
-    );
+    useEffect(() => {
+        const loadCats = async () => {
+            try {
+                const { data } = await fetchCategories();
+                setCategories(data.filter(c => c.isActive));
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+            }
+            setCatLoading(false);
+        };
+        loadCats();
+    }, []);
+
+    // Get category display name for a product
+    const getCatName = (product) => {
+        if (product.category && typeof product.category === 'object') {
+            return product.category.name || '';
+        }
+        return typeof product.category === 'string' ? product.category : '';
+    };
+
+    const filteredProducts = useMemo(() => {
+        return products.filter(p => {
+            const catName = getCatName(p);
+            // Text search
+            const matchesSearch = search === '' ||
+                p.name.toLowerCase().includes(search.toLowerCase()) ||
+                catName.toLowerCase().includes(search.toLowerCase());
+
+            // Category filter
+            const matchesCat = activeCatFilter === 'All' ||
+                (p.category && typeof p.category === 'object' && p.category._id === activeCatFilter);
+
+            return matchesSearch && matchesCat;
+        });
+    }, [products, search, activeCatFilter]);
 
     return (
         <div className="px-4 pb-20 pt-4">
@@ -42,6 +78,8 @@ const AdminMenu = ({
                         </button>
                     </div>
                 </div>
+
+                {/* Search */}
                 <div className="relative">
                     <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#A0998F' }} />
                     <input
@@ -54,6 +92,45 @@ const AdminMenu = ({
                         onFocus={(e) => e.target.style.borderColor = '#C97B4B'}
                         onBlur={(e) => e.target.style.borderColor = '#E8E3DB'}
                     />
+                </div>
+
+                {/* Category Filter Bar */}
+                <div className="flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
+                    {catLoading ? (
+                        // Skeleton pills
+                        [...Array(4)].map((_, i) => (
+                            <div key={i} className="flex-shrink-0 w-20 h-8 rounded-full animate-pulse" style={{ background: '#E8E3DB' }} />
+                        ))
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => setActiveCatFilter('All')}
+                                className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+                                style={activeCatFilter === 'All'
+                                    ? { background: '#C97B4B', color: '#FFFFFF', boxShadow: '0 2px 8px rgba(201,123,75,0.3)' }
+                                    : { background: '#FFFFFF', color: '#5C3A2A', border: '1.5px solid #E8E3DB' }
+                                }
+                            >
+                                All ({products.length})
+                            </button>
+                            {categories.map((cat) => {
+                                const count = products.filter(p => p.category && typeof p.category === 'object' && p.category._id === cat._id).length;
+                                return (
+                                    <button
+                                        key={cat._id}
+                                        onClick={() => setActiveCatFilter(cat._id)}
+                                        className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 whitespace-nowrap"
+                                        style={activeCatFilter === cat._id
+                                            ? { background: cat.colorFrom || '#C97B4B', color: '#FFFFFF', boxShadow: `0 2px 8px ${cat.colorFrom || '#C97B4B'}30` }
+                                            : { background: '#FFFFFF', color: '#5C3A2A', border: '1.5px solid #E8E3DB' }
+                                        }
+                                    >
+                                        {cat.icon || '📦'} {cat.name} ({count})
+                                    </button>
+                                );
+                            })}
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -96,7 +173,7 @@ const AdminMenu = ({
                                     <p className="font-bold" style={{ color: '#C97B4B' }}>₹{product.basePrice}</p>
                                 </div>
                                 <p className="text-xs" style={{ color: '#A0998F' }}>
-                                    {product.category}
+                                    {getCatName(product)}
                                     {product.isBestseller && (
                                         <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: '#FEF3E2', color: '#C97B4B', border: '1px solid #E8E3DB' }}>⭐ Bestseller</span>
                                     )}

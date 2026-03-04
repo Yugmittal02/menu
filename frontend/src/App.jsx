@@ -5,6 +5,7 @@ import { CartProvider } from './context/CartContext';
 import LoadingSpinner from './components/LoadingSpinner';
 import CookieConsent from './components/CookieConsent';
 import BottomNav from './components/BottomNav';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Keep Welcome static for instant landing page load
 import Welcome from './pages/Welcome';
@@ -35,9 +36,10 @@ const AdminRoute = ({ children }) => {
 
 const App = () => {
     return (
-        <AuthProvider>
-            <CartProvider>
-                <Router>
+        <ErrorBoundary>
+            <AuthProvider>
+                <CartProvider>
+                    <Router>
                     <Suspense fallback={<LoadingSpinner />}>
                         <div className="pb-20 md:pb-0 min-h-screen">
                             <Routes>
@@ -71,9 +73,10 @@ const App = () => {
                         <BottomNav />
                         <CookieConsent />
                     </Suspense>
-                </Router>
-            </CartProvider>
-        </AuthProvider>
+                    </Router>
+                </CartProvider>
+            </AuthProvider>
+        </ErrorBoundary>
     );
 };
 

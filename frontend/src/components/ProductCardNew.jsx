@@ -1,13 +1,14 @@
-import React, { useState, useMemo, memo, useCallback } from 'react';
-import { FaHeart, FaRegHeart, FaStar, FaShoppingCart, FaCheck, FaBolt } from 'react-icons/fa';
+import React, { useState, useMemo, memo, useCallback, useRef } from 'react';
+import { FaHeart, FaRegHeart, FaCheck } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
-import CustomizeModal from './CustomizeModal';
+import BottomSheetCustomizer from './BottomSheetCustomizer';
 
 const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = false }) => {
     const { addToCart } = useCart();
-    const [added, setAdded] = useState(false);
+    const [showToast, setShowToast] = useState(false);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [showCustomize, setShowCustomize] = useState(false);
+    const addBtnRef = useRef(null);
 
     const safeProduct = useMemo(() => ({
         _id: product?._id || '',
@@ -16,13 +17,11 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
         basePrice: Number(product?.basePrice || product?.price) || 0,
         originalPrice: Number(product?.originalPrice || product?.mrp) || Number(product?.price || product?.basePrice) || 0,
         image: product?.image || '',
-        rating: product?.rating || '4.5',
-        soldCount: product?.soldCount || Math.floor(Math.random() * 200 + 50),
-        description: product?.description || '',
         isAvailable: product?.isAvailable !== false,
         isBestseller: product?.isBestseller || false,
         category: product?.category || '',
-        weight: product?.weight || '500g',
+        weight: product?.weight || '',
+        description: product?.description || '',
         sizes: Array.isArray(product?.sizes) ? product.sizes : [],
         addons: Array.isArray(product?.addons) ? product.addons : [],
     }), [product]);
@@ -38,13 +37,14 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
 
     const handleAdd = useCallback((e) => {
         e?.stopPropagation();
-        if (!safeProduct.isAvailable || added) return;
+        if (!safeProduct.isAvailable) return;
 
         if (hasOptions) {
             setShowCustomize(true);
             return;
         }
 
+        // No options — direct add with toast
         addToCart({
             _id: safeProduct._id,
             name: safeProduct.name,
@@ -52,19 +52,18 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
             basePrice: safeProduct.basePrice,
             image: safeProduct.image,
         });
-        setAdded(true);
+        setShowToast(true);
         onAddSuccess?.();
-        setTimeout(() => setAdded(false), 2000);
-    }, [safeProduct, added, addToCart, onAddSuccess, hasOptions]);
+        setTimeout(() => setShowToast(false), 1400);
+    }, [safeProduct, addToCart, onAddSuccess, hasOptions]);
 
-    const handleCustomizeClose = useCallback((didAdd = false) => {
+    const handleSheetClose = useCallback(() => {
         setShowCustomize(false);
-        if (didAdd) {
-            setAdded(true);
-            setTimeout(() => setAdded(false), 2000);
-            onAddSuccess?.();
+        // Return focus
+        if (addBtnRef.current) {
+            addBtnRef.current.focus();
         }
-    }, [onAddSuccess]);
+    }, []);
 
     const toggleWishlist = useCallback((e) => {
         e?.stopPropagation();
@@ -81,11 +80,28 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
                 animationDelay: `${index * 0.06}s`
             }}
         >
+            {/* "+1 added" toast */}
+            {showToast && (
+                <div style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)', zIndex: 20,
+                    background: 'rgba(34,197,94,0.92)', color: '#FFF',
+                    padding: '6px 16px', borderRadius: 20,
+                    fontSize: 13, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    boxShadow: '0 4px 16px rgba(34,197,94,0.35)',
+                    animation: 'toastPop 0.3s ease',
+                    pointerEvents: 'none',
+                }}>
+                    <FaCheck size={10} /> +1 added
+                </div>
+            )}
+
             {/* Badges - Top Left */}
             <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                 {safeProduct.isBestseller && (
                     <span className="bg-[#C97B4B] text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                        <FaBolt size={7} /> BEST
+                        ⚡ BEST
                     </span>
                 )}
                 {discountPercent > 0 && (
@@ -120,35 +136,34 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
                     <div className="w-full h-full flex items-center justify-center text-4xl bg-orange-50">🍰</div>
                 )}
 
-                {/* Express Delivery Badge - Winni Style */}
-                <div className="absolute bottom-0 left-0 right-0 px-2 pb-2">
-                    <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-full px-2 py-1 shadow-sm w-fit">
-                        <FaBolt size={8} className="text-[#C97B4B]" />
-                        <span className="text-[9px] font-semibold text-gray-700">Express Delivery</span>
+                {/* Out of Stock Overlay */}
+                {!safeProduct.isAvailable && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+                        <span className="bg-white/95 text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wider">
+                            Out of Stock
+                        </span>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Product Info */}
             <div className="p-2.5 flex flex-col gap-1">
-                {/* Rating Row - FNP Style */}
-                <div className="flex items-center gap-1">
-                    <div className="flex items-center gap-0.5 bg-green-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                        <span>{safeProduct.rating}</span>
-                        <FaStar size={7} />
-                    </div>
-                    <span className="text-[10px] text-gray-400">({safeProduct.soldCount})</span>
-                </div>
-
                 {/* Name */}
                 <h4 className="font-semibold text-[13px] text-gray-800 leading-tight line-clamp-2 min-h-[2.2em]">
                     {safeProduct.name}
                 </h4>
 
-                {/* Weight/Size - Winni Style */}
-                <span className="text-[10px] text-gray-400 font-medium">
-                    {safeProduct.weight}
-                </span>
+                {/* Description — one line */}
+                {safeProduct.description && (
+                    <p className="text-[10px] text-gray-400 line-clamp-1">{safeProduct.description}</p>
+                )}
+
+                {/* Weight/Size */}
+                {safeProduct.weight && (
+                    <span className="text-[10px] text-gray-400 font-medium">
+                        {safeProduct.weight}
+                    </span>
+                )}
 
                 {/* Price + Add Button Row */}
                 <div className="flex items-end justify-between mt-1">
@@ -159,37 +174,35 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
                         )}
                     </div>
 
-                    {/* Add Button - Compact like Winni */}
+                    {/* Add Button */}
                     <button
+                        ref={addBtnRef}
                         onClick={handleAdd}
-                        disabled={!safeProduct.isAvailable || added}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all active:scale-95 ${added
-                                ? 'bg-green-600 text-white'
-                                : 'border-2 border-[#C97B4B] text-[#C97B4B] bg-white hover:bg-[#C97B4B] hover:text-white'
-                            }`}
+                        disabled={!safeProduct.isAvailable}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all active:scale-95 border-2 border-[#C97B4B] text-[#C97B4B] bg-white hover:bg-[#C97B4B] hover:text-white"
                     >
-                        {added ? (
-                            <>
-                                <FaCheck size={9} />
-                                <span>Added</span>
-                            </>
-                        ) : (
-                            <>
-                                <span>{hasOptions ? 'ADD +' : 'ADD'}</span>
-                            </>
-                        )}
+                        <span>{hasOptions ? 'ADD +' : 'ADD'}</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        {/* Customize Modal */}
+        {/* Bottom Sheet Customizer */}
         {showCustomize && (
-            <CustomizeModal
+            <BottomSheetCustomizer
                 product={safeProduct}
-                onClose={handleCustomizeClose}
+                onClose={handleSheetClose}
+                triggerRef={addBtnRef}
             />
         )}
+
+        {/* Toast animation CSS */}
+        <style>{`
+            @keyframes toastPop {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+                100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+        `}</style>
         </>
     );
 });

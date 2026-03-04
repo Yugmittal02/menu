@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPhoneAlt, FaEnvelope, FaInstagram, FaWhatsapp, FaHeart } from 'react-icons/fa';
+import { FaPhoneAlt, FaEnvelope, FaInstagram, FaWhatsapp, FaHeart, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Footer = memo(() => {
     const currentYear = useMemo(() => new Date().getFullYear(), []);
@@ -10,26 +10,16 @@ const Footer = memo(() => {
             {/* Logo */}
             <div className="footer-logo">
                 <div className="flex items-center justify-center gap-3 mb-2">
-                    <span className="text-3xl animate-float" style={{ animationDuration: '3s' }}>🍰</span>
+                    <span className="text-3xl" style={{ animationDuration: '3s' }}>🍰</span>
                     <h3>Sewa Shubham Bakery</h3>
                 </div>
                 <p>Crafting sweet memories since 2002</p>
             </div>
 
-            {/* Quick Stats */}
-            <div className="flex justify-center gap-8 mb-8">
-                <div className="text-center px-4 py-3 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.15)' }}>
-                    <p className="text-2xl font-bold text-white">500+</p>
-                    <p className="text-xs text-white opacity-80">Happy Customers</p>
-                </div>
-                <div className="text-center px-4 py-3 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.15)' }}>
-                    <p className="text-2xl font-bold text-white">50+</p>
-                    <p className="text-xs text-white opacity-80">Unique Items</p>
-                </div>
-                <div className="text-center px-4 py-3 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.15)' }}>
-                    <p className="text-2xl font-bold text-white">4.9★</p>
-                    <p className="text-xs text-white opacity-80">Rating</p>
-                </div>
+            {/* Address */}
+            <div className="flex items-center justify-center gap-2 mb-6 text-white/80">
+                <FaMapMarkerAlt size={14} />
+                <span className="text-sm">Bharatpur, Rajasthan</span>
             </div>
 
             {/* Links */}

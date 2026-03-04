@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { updateProduct, createProduct, fetchProducts } from '../../services/api';
+import { updateProduct, createProduct, fetchCategories as fetchCategoriesAPI } from '../../services/api';
 import { FaTimes, FaCamera, FaPlus } from 'react-icons/fa';
 
 const ProductFormModal = ({ product, onClose, onSave }) => {
+    // Resolve category to its _id whether it's a string, ObjectId, or populated object
+    const resolveCategory = (cat) => {
+        if (!cat) return '';
+        if (typeof cat === 'string') return cat;
+        if (cat._id) return cat._id;
+        return '';
+    };
+
     const [form, setForm] = useState({
         name: product?.name || "",
         description: product?.description || "",
-        category: product?.category || "",
+        category: resolveCategory(product?.category),
         basePrice: product?.basePrice || "",
         image: product?.image || "",
         sizes: product?.sizes || [],
@@ -17,25 +25,17 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
     const [newAddon, setNewAddon] = useState({ name: "", price: "" });
     const [uploading, setUploading] = useState(false);
 
-    // Default categories for the bakery
-    const DEFAULT_CATEGORIES = ["Cake", "Fastfood", "Beverages", "Flowers"];
-
-    // Category state
-    const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-    const [showCategoryInput, setShowCategoryInput] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState("");
+    // Category state — fetched from API
+    const [categories, setCategories] = useState([]);
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
-    // Merge default categories with any from existing products
     useEffect(() => {
         const loadCategories = async () => {
             try {
-                const { data } = await fetchProducts();
-                const productCats = data.map(p => p.category).filter(Boolean);
-                const merged = [...new Set([...DEFAULT_CATEGORIES, ...productCats])];
-                setCategories(merged);
+                const { data } = await fetchCategoriesAPI();
+                setCategories(data);
             } catch (err) {
-                console.error(err);
+                console.error('Failed to load categories:', err);
             }
         };
         loadCategories();
@@ -90,21 +90,13 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
     const removeSize = (index) => setForm({ ...form, sizes: form.sizes.filter((_, i) => i !== index) });
     const removeAddon = (index) => setForm({ ...form, addons: form.addons.filter((_, i) => i !== index) });
 
-    const handleCreateCategory = () => {
-        if (newCategoryName.trim()) {
-            const cat = newCategoryName.trim();
-            setCategories(prev => [...new Set([...prev, cat])]);
-            setForm({ ...form, category: cat });
-            setNewCategoryName("");
-            setShowCategoryInput(false);
-            setCategoryDropdownOpen(false);
-        }
-    };
-
-    const selectCategory = (cat) => {
-        setForm({ ...form, category: cat });
+    const selectCategory = (catId) => {
+        setForm({ ...form, category: catId });
         setCategoryDropdownOpen(false);
     };
+
+    // Find the selected category object for display
+    const selectedCat = categories.find(c => c._id === form.category);
 
     const inputStyle = {
         background: '#FAF7F2',
@@ -197,8 +189,8 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
                             className="w-full rounded-xl p-3 text-sm outline-none text-left flex justify-between items-center"
                             style={inputStyle}
                         >
-                            <span style={{ color: form.category ? '#1C1C1C' : '#A0998F' }}>
-                                {form.category || 'Select a category...'}
+                            <span style={{ color: selectedCat ? '#1C1C1C' : '#A0998F' }}>
+                                {selectedCat ? `${selectedCat.icon || ''} ${selectedCat.name}` : 'Select a category...'}
                             </span>
                             <span style={{ color: '#A0998F', transform: categoryDropdownOpen ? 'rotate(180deg)' : '', transition: 'transform 0.2s' }}>▼</span>
                         </button>
@@ -210,57 +202,24 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
                                 <div className="max-h-48 overflow-y-auto">
                                     {categories.map((cat) => (
                                         <button
-                                            key={cat}
+                                            key={cat._id}
                                             type="button"
-                                            onClick={() => selectCategory(cat)}
+                                            onClick={() => selectCategory(cat._id)}
                                             className="w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center justify-between"
                                             style={{
-                                                color: form.category === cat ? '#C97B4B' : '#1C1C1C',
-                                                background: form.category === cat ? '#FEF3E2' : 'transparent',
+                                                color: form.category === cat._id ? '#C97B4B' : '#1C1C1C',
+                                                background: form.category === cat._id ? '#FEF3E2' : 'transparent',
                                                 borderBottom: '1px solid #F5F0E8'
                                             }}
                                         >
-                                            <span>{cat}</span>
-                                            {form.category === cat && <span style={{ color: '#C97B4B' }}>✓</span>}
+                                            <span>{cat.icon || '📦'} {cat.name}</span>
+                                            {form.category === cat._id && <span style={{ color: '#C97B4B' }}>✓</span>}
                                         </button>
                                     ))}
-                                    {categories.length === 0 && !showCategoryInput && (
-                                        <p className="px-4 py-3 text-xs" style={{ color: '#A0998F' }}>No categories yet</p>
+                                    {categories.length === 0 && (
+                                        <p className="px-4 py-3 text-xs" style={{ color: '#A0998F' }}>No categories yet. Create one in the Categories tab.</p>
                                     )}
                                 </div>
-
-                                {/* Create new category */}
-                                {!showCategoryInput ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCategoryInput(true)}
-                                        className="w-full text-left px-4 py-3 text-sm font-bold flex items-center gap-2"
-                                        style={{ color: '#C97B4B', borderTop: '2px solid #E8E3DB', background: '#FEF3E2' }}
-                                    >
-                                        <FaPlus size={10} /> Create New Category
-                                    </button>
-                                ) : (
-                                    <div className="p-3 flex gap-2" style={{ borderTop: '2px solid #E8E3DB', background: '#FEF3E2' }}>
-                                        <input
-                                            type="text"
-                                            value={newCategoryName}
-                                            onChange={(e) => setNewCategoryName(e.target.value)}
-                                            placeholder="New category name"
-                                            className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
-                                            style={{ background: '#FFFFFF', border: '1px solid #E8E3DB' }}
-                                            autoFocus
-                                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleCreateCategory())}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={handleCreateCategory}
-                                            className="px-4 py-2 rounded-lg text-xs font-bold text-white"
-                                            style={{ background: '#C97B4B' }}
-                                        >
-                                            Add
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         )}
                     </div>

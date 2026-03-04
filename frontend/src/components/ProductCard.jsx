@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useCart } from '../context/CartContext';
 import { FaPlus, FaStar, FaCheck } from 'react-icons/fa';
-import CustomizeModal from './CustomizeModal';
+import BottomSheetCustomizer from './BottomSheetCustomizer';
 
 const ProductCard = memo(({ product, onAddSuccess }) => {
     const { addToCart } = useCart();
@@ -191,9 +191,9 @@ const ProductCard = memo(({ product, onAddSuccess }) => {
             
             {/* Customize Modal */}
             {showCustomize && (
-                <CustomizeModal 
+                <BottomSheetCustomizer 
                     product={safeProduct} 
-                    onClose={handleCustomizeClose} 
+                    onClose={() => { setShowCustomize(false); }}
                 />
             )}
         </>

@@ -79,6 +79,10 @@ export const updateFeeSettings = (data) => API.put("/settings/fees", data);
 export const calculateDeliveryFee = (customerLat, customerLng, orderTotal) =>
   API.post("/settings/calculate-delivery", { customerLat, customerLng, orderTotal });
 
+// Homepage Badges
+export const getHomepageBadges = () => API.get("/settings/homepage-badges");
+export const updateHomepageBadges = (badges) => API.put("/settings/homepage-badges", { badges });
+
 // Payments (Razorpay)
 export const getRazorpayKey = () => API.get("/payments/key");
 export const createPaymentOrder = (data) =>
@@ -102,6 +106,13 @@ export const getCartFromDB = () => API.get("/auth/cart");
 // Activity log
 export const logUserActivity = (data) => API.post("/auth/activity", data);
 export const getUserActivity = () => API.get("/auth/activity");
+
+// Categories
+export const fetchCategories = () => API.get("/categories");
+export const fetchCategoryBySlug = (slug) => API.get(`/categories/${slug}`);
+export const createCategory = (data) => API.post("/categories", data);
+export const updateCategory = (id, data) => API.put(`/categories/${id}`, data);
+export const deleteCategory = (id) => API.delete(`/categories/${id}`);
 
 export default API;
 

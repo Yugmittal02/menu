@@ -9,6 +9,7 @@ import {
   calculateDeliveryFee,
   getPaymentStatus,
   logUserActivity,
+  getRazorpayKey,
 } from "../services/api";
 import {
   FaArrowLeft,
@@ -62,6 +63,21 @@ const Payment = () => {
   // Celebration states
   const [showSavingsCelebration, setShowSavingsCelebration] = useState(false);
   const [celebrationAmount, setCelebrationAmount] = useState(0);
+
+  // Razorpay mode indicator
+  const [razorpayMode, setRazorpayMode] = useState(null);
+
+  useEffect(() => {
+    const checkMode = async () => {
+      try {
+        const { data } = await getRazorpayKey();
+        setRazorpayMode(data.mode);
+      } catch (err) {
+        // ignore
+      }
+    };
+    checkMode();
+  }, []);
 
   // Calculations - No tax, no platform fee
   const subtotal = Number(total) || 0;
@@ -491,6 +507,24 @@ const Payment = () => {
       </header>
 
       <div className="p-4 space-y-4">
+        {/* Razorpay Test Mode Warning */}
+        {razorpayMode === 'test' && (
+          <div style={{
+            background: '#FEF9E7',
+            border: '1.5px solid #F4D03F',
+            borderRadius: '14px',
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <span style={{ fontSize: '20px' }}>⚠️</span>
+            <div>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: '#7D6608', margin: 0 }}>Test Mode — No real charges</p>
+              <p style={{ fontSize: '11px', color: '#9A7D0A', margin: 0, marginTop: '2px' }}>Payments are simulated. Use test cards only.</p>
+            </div>
+          </div>
+        )}
         {/* Order Summary Card */}
         <div className="bg-white p-5 rounded-3xl shadow-sm border border-[var(--border-light)] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--bg-cream)] rounded-full -mr-10 -mt-10 opacity-50"></div>
