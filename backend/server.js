@@ -165,7 +165,6 @@ mongoose
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/orders", require("./routes/orders"));
-app.use("/api/offers", require("./routes/offers"));
 app.use("/api/ratings", require("./routes/ratings"));
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/settings", require("./routes/settings"));

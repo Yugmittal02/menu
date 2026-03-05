@@ -43,14 +43,6 @@ export const updateOrderStatus = (id, status) =>
 export const acceptOrder = (id) => API.put(`/orders/${id}/accept`);
 export const cancelOrder = (id) => API.put(`/orders/${id}/cancel`);
 
-// Offers
-export const fetchOffers = () => API.get("/offers");
-export const fetchAllOffersAdmin = () => API.get("/offers/admin");
-export const createOffer = (data) => API.post("/offers", data);
-export const updateOffer = (id, data) => API.put(`/offers/${id}`, data);
-export const deleteOffer = (id) => API.delete(`/offers/${id}`);
-export const validateCoupon = (code, orderTotal) =>
-  API.post("/offers/validate", { code, orderTotal });
 
 // Ratings
 export const submitRating = (data) => API.post("/ratings", data);

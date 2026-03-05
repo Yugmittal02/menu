@@ -140,7 +140,7 @@ const UserDashboard = () => {
             </header>
 
             {/* Stats Row */}
-            <div className={`mx-3 -mt-1 grid grid-cols-3 gap-2 transition-all duration-700 delay-100 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div className={`mx-3 -mt-1 grid grid-cols-2 gap-2 transition-all duration-700 delay-100 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="p-3 rounded-2xl text-center"
                     style={{ background: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.06)', border: '1px solid #F3F0EB' }}>
                     <p className="text-xl font-bold" style={{ color: '#F97316' }}>{orders.length}</p>
@@ -151,11 +151,6 @@ const UserDashboard = () => {
                     <p className="text-xl font-bold" style={{ color: '#F97316' }}>₹{totalSpent}</p>
                     <p className="text-[10px] font-medium mt-0.5" style={{ color: '#9CA3AF' }}>Spent</p>
                 </div>
-                <div className="p-3 rounded-2xl text-center"
-                    style={{ background: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.06)', border: '1px solid #F3F0EB' }}>
-                    <p className="text-xl font-bold" style={{ color: '#F97316' }}>{orders.length * 50}</p>
-                    <p className="text-[10px] font-medium mt-0.5" style={{ color: '#9CA3AF' }}>Points</p>
-                </div>
             </div>
 
             {/* Quick Actions */}
@@ -165,7 +160,6 @@ const UserDashboard = () => {
                         { icon: <FaShoppingBag size={16} color="#F97316" />, label: 'My Orders', sub: `${orders.length} orders placed`, action: () => { const el = document.getElementById('recent-orders-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, bg: '#FFF7ED' },
                         { icon: <FaMapMarkerAlt size={16} color="#3B82F6" />, label: 'Saved Address', sub: 'Manage delivery address', action: () => navigate('/cart'), bg: '#EFF6FF' },
                         { icon: <FaHeart size={16} color="#EF4444" />, label: 'Favorites', sub: 'Browse your liked items', action: () => navigate('/menu'), bg: '#FEF2F2' },
-                        { icon: <FaPercent size={14} color="#22C55E" />, label: 'Offers & Coupons', sub: 'Available discounts', action: () => navigate('/menu'), bg: '#F0FDF4' },
                     ].map((item, i) => (
                         <button key={i} onClick={item.action}
                             className="w-full flex items-center gap-3 p-3.5 rounded-xl transition-all active:scale-[0.98] active:bg-gray-50"
@@ -184,49 +178,6 @@ const UserDashboard = () => {
                 </div>
             </div>
 
-            {/* Loyalty Card - Premium */}
-            <div className={`mx-3 mt-4 transition-all duration-700 delay-300 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="p-4 rounded-2xl relative overflow-hidden"
-                    style={{
-                        background: 'linear-gradient(135deg, #F97316 0%, #FB923C 50%, #F59E0B 100%)',
-                        boxShadow: '0 8px 30px rgba(249, 115, 22, 0.3)',
-                    }}>
-                    {/* Decorative */}
-                    <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}></div>
-                    <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}></div>
-
-                    <div className="relative flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
-                            <FaGift size={22} color="#FFFFFF" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white text-sm">🎉 Loyalty Rewards</p>
-                            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                                Earn 50 points per order!
-                            </p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                            <p className="text-2xl font-extrabold text-white">{orders.length * 50}</p>
-                            <p className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>POINTS</p>
-                        </div>
-                    </div>
-
-                    {/* Progress bar */}
-                    <div className="mt-3 relative">
-                        <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                            <div className="h-full rounded-full transition-all duration-1000"
-                                style={{
-                                    width: `${Math.min((orders.length * 50 / 500) * 100, 100)}%`,
-                                    background: 'rgba(255,255,255,0.8)',
-                                }}></div>
-                        </div>
-                        <p className="text-[9px] mt-1 text-right" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                            {Math.max(500 - orders.length * 50, 0)} pts to next reward
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             {/* Recent Orders */}
             <div id="recent-orders-section" className={`mx-3 mt-5 transition-all duration-700 delay-400 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>

@@ -478,13 +478,6 @@ const OrderSuccess = () => {
                   </div>
                 )}
 
-                {/* Savings Badge */}
-                {state?.savedAmount > 0 && (
-                  <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-bold ml-2">
-                    <FaGift />
-                    You saved ₹{state.savedAmount}!
-                  </div>
-                )}
 
                 {/* Donation Badge */}
                 {state?.donationAmount > 0 && (
@@ -722,15 +715,7 @@ const OrderSuccess = () => {
                           <span>₹{orderData.deliveryFee.toFixed(0)}</span>
                         </div>
                       )}
-                      {orderData.appliedOffer?.discountAmount > 0 && (
-                        <div className="flex justify-between text-green-600 font-medium">
-                          <span>Discount</span>
-                          <span>
-                            - ₹
-                            {orderData.appliedOffer.discountAmount.toFixed(0)}
-                          </span>
-                        </div>
-                      )}
+
                       {orderData.donationAmount > 0 && (
                         <div className="flex justify-between text-pink-600 font-medium">
                           <span>Donation 💕</span>

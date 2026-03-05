@@ -7,11 +7,9 @@ import AdminOrders from "../components/admin/AdminOrders";
 import AdminMenu from "../components/admin/AdminMenu";
 import AdminCustomers from "../components/admin/AdminCustomers";
 import AdminStats from "../components/admin/AdminStats";
-import AdminOffers from "../components/admin/AdminOffers";
 import AdminCategories from "../components/admin/AdminCategories";
 import AdminSettings from "../components/admin/AdminSettings";
 import ProductFormModal from "../components/admin/ProductFormModal";
-import OfferFormModal from "../components/admin/OfferFormModal";
 
 import {
   deleteProduct,
@@ -22,8 +20,6 @@ import {
   fetchAllOrders,
   manualVerifyPayment,
   acceptOrder,
-  fetchAllOffersAdmin,
-  deleteOffer,
   getStoreSettings,
   updateStoreSettings,
 } from "../services/api";
@@ -47,10 +43,6 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showStockConfirm, setShowStockConfirm] = useState(null);
 
-  // Offers
-  const [offers, setOffers] = useState([]);
-  const [showOfferForm, setShowOfferForm] = useState(false);
-  const [editingOffer, setEditingOffer] = useState(null);
 
   // Settings
   const [storeSettings, setStoreSettings] = useState({ isOpen: true });
@@ -58,7 +50,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadOrders();
     loadProducts();
-    loadOffers();
     loadStoreSettings();
     const interval = setInterval(loadOrders, 30000);
     return () => clearInterval(interval);
@@ -78,12 +69,6 @@ const AdminDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
-  const loadOffers = async () => {
-    try {
-      const { data } = await fetchAllOffersAdmin();
-      setOffers(data);
-    } catch (err) { console.error(err); }
-  };
 
   const loadStoreSettings = async () => {
     try {
@@ -92,15 +77,7 @@ const AdminDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
-  const handleDeleteOffer = async (id) => {
-    if (window.confirm("Delete this offer?")) {
-      try {
-        await deleteOffer(id);
-        loadOffers();
-      } catch (err) { alert("Failed to delete offer"); }
-    }
-  };
-  // Order handlers
+
   const handleUpdateStatus = async (id, status) => {
     try {
       await updateOrderStatus(id, status);
@@ -222,14 +199,6 @@ const AdminDashboard = () => {
         <AdminCustomers orders={orders} />
       )}
 
-      {activeTab === 'offers' && (
-        <AdminOffers
-          offers={offers}
-          onAdd={() => { setEditingOffer(null); setShowOfferForm(true); }}
-          onEdit={(o) => { setEditingOffer(o); setShowOfferForm(true); }}
-          onDelete={handleDeleteOffer}
-        />
-      )}
 
       {activeTab === 'revenue' && (
         <AdminStats
@@ -258,14 +227,6 @@ const AdminDashboard = () => {
         />
       )}
 
-      {/* Offer Form Modal */}
-      {showOfferForm && (
-        <OfferFormModal
-          offer={editingOffer}
-          onClose={() => { setShowOfferForm(false); setEditingOffer(null); }}
-          onSave={() => { loadOffers(); setShowOfferForm(false); setEditingOffer(null); }}
-        />
-      )}
 
       {/* Stock Toggle Confirmation */}
       {showStockConfirm && (

@@ -21,8 +21,6 @@ import {
   FaGift,
 } from "react-icons/fa";
 import UPIPaymentModal from "../components/UPIPaymentModal";
-import OffersDropdown from "../components/OffersDropdown";
-import CelebrationMessage from "../components/CelebrationMessage";
 import Footer from "../components/Footer";
 
 const Payment = () => {
@@ -56,14 +54,6 @@ const Payment = () => {
   const [freeDelivery, setFreeDelivery] = useState(false);
   const [deliveryFee, setDeliveryFee] = useState(orderType === "Delivery" ? 30 : 0);
 
-  // Offer states
-  const [selectedOffer, setSelectedOffer] = useState(null);
-  const [discount, setDiscount] = useState(0);
-
-  // Celebration states
-  const [showSavingsCelebration, setShowSavingsCelebration] = useState(false);
-  const [celebrationAmount, setCelebrationAmount] = useState(0);
-
   // Razorpay mode indicator
   const [razorpayMode, setRazorpayMode] = useState(null);
 
@@ -81,7 +71,7 @@ const Payment = () => {
 
   // Calculations - No tax, no platform fee
   const subtotal = Number(total) || 0;
-  const grandTotal = Math.max(0, subtotal + deliveryFee - (Number(discount) || 0));
+  const grandTotal = Math.max(0, subtotal + deliveryFee);
 
   // Check for pending payment on page load (for UPI app return)
   useEffect(() => {
@@ -273,17 +263,6 @@ const Payment = () => {
     }
   };
 
-  const handleOfferSelect = (offer) => {
-    if (offer) {
-      setSelectedOffer(offer);
-      setDiscount(offer.calculatedDiscount);
-      setCelebrationAmount(offer.calculatedDiscount);
-      setShowSavingsCelebration(true);
-    } else {
-      setSelectedOffer(null);
-      setDiscount(0);
-    }
-  };
 
   const handleCheckout = async () => {
     if (paymentMethod === "Razorpay") {
@@ -331,13 +310,6 @@ const Payment = () => {
         paymentMethod,
         orderType,
         deliveryAddress: orderType === "Delivery" ? deliveryAddress : undefined,
-        appliedOffer: selectedOffer
-          ? {
-            offerId: selectedOffer._id,
-            code: selectedOffer.code,
-            discountAmount: discount,
-          }
-          : undefined,
         deliveryFee,
       };
 
@@ -369,7 +341,6 @@ const Payment = () => {
           customerName: customer.name,
           orderDate: new Date().toISOString(),
           orderId: response.data._id,
-          savedAmount: discount,
           paymentMethod: paymentMethod,
           totalAmount: grandTotal,
         },
@@ -410,7 +381,6 @@ const Payment = () => {
           paymentId: result.paymentId,
           paymentVerified: !result.paymentPending,
           paymentMethod: "Razorpay",
-          savedAmount: discount,
           totalAmount: grandTotal,
         },
         replace: true,
@@ -600,12 +570,6 @@ const Payment = () => {
           </div>
         )}
 
-        {/* Offers Dropdown */}
-        <OffersDropdown
-          orderTotal={subtotal}
-          onOfferSelect={handleOfferSelect}
-          selectedOffer={selectedOffer}
-        />
 
         {/* Payment Methods */}
         <div>
@@ -679,17 +643,6 @@ const Payment = () => {
                 <span>₹30</span>
               </div>
             )}
-            {discount > 0 && (
-              <div className="flex justify-between text-green-600 font-semibold bg-green-50/50 p-2 rounded-lg border border-green-100/50">
-                <span className="flex items-center gap-1.5">
-                  <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                    <FaGift size={10} />
-                  </div>
-                  Discount
-                </span>
-                <span>- ₹{(Number(discount) || 0).toFixed(0)}</span>
-              </div>
-            )}
             <div className="border-t-2 border-dashed border-[var(--border-light)] pt-4 mt-4">
               <div className="flex justify-between text-xl font-bold text-[var(--text-dark)] items-center">
                 <span>To Pay</span>
@@ -749,15 +702,6 @@ const Payment = () => {
         customerNote=""
       />
 
-      {/* Celebration Messages */}
-      {showSavingsCelebration && (
-        <CelebrationMessage
-          type="savings"
-          amount={celebrationAmount}
-          onClose={() => setShowSavingsCelebration(false)}
-          autoCloseDelay={2500}
-        />
-      )}
 
       {/* Custom CSS */}
       <style>{`

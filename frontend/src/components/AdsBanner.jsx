@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowRight } from 'react-icons/fa';
-import { fetchOffers } from '../services/api';
 
 const AdsBanner = () => {
     const navigate = useNavigate();
     const [currentAd, setCurrentAd] = useState(0);
-    const [ads, setAds] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     const gradients = [
         'linear-gradient(135deg, #C97B4B 0%, #E8956A 100%)',
@@ -67,39 +64,7 @@ const AdsBanner = () => {
         }
     ];
 
-    useEffect(() => {
-        const loadOffers = async () => {
-            try {
-                const { data } = await fetchOffers();
-                // Transform offers to ads format
-                if (data && data.length > 0) {
-                    const formattedAds = data.map((offer, index) => ({
-                        id: offer._id,
-                        title: offer.title,
-                        subtitle: offer.description || 'Special Deal For You',
-                        description: `Use Code: ${offer.code}`,
-                        image: offer.image || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=400&fit=crop',
-                        bgGradient: gradients[index % gradients.length],
-                        link: '/category/all',
-                        badge: offer.discountType === 'percentage' ? `${offer.discountValue}% OFF` : `₹${offer.discountValue} OFF`,
-                        icon: icons[index % icons.length]
-                    }));
-                    setAds(formattedAds);
-                } else {
-                    // Use default ads if no offers from API
-                    setAds(defaultAds);
-                }
-            } catch (error) {
-                console.error("Failed to fetch ads:", error);
-                // Use default ads on error
-                setAds(defaultAds);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadOffers();
-    }, []);
+    const [ads] = useState(defaultAds);
 
     // Auto-rotate ads every 5 seconds
     useEffect(() => {
@@ -127,8 +92,6 @@ const AdsBanner = () => {
         if (ads.length === 0) return;
         setCurrentAd((prev) => (prev - 1 + ads.length) % ads.length);
     };
-
-    if (loading) return null; // Or a skeleton
 
     return (
         <section className="ads-banner-section max-w-5xl mx-auto my-4 px-3">
