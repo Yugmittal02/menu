@@ -170,6 +170,7 @@ app.use("/api/upload", require("./routes/upload"));
 app.use("/api/settings", require("./routes/settings"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/categories", require("./routes/categories"));
+app.use("/api/offers", require("./routes/offers"));
 
 // Health check endpoint
 app.get("/", (req, res) => {

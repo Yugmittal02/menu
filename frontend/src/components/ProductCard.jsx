@@ -2,12 +2,10 @@ import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { FaPlus, FaStar, FaCheck } from 'react-icons/fa';
-import BottomSheetCustomizer from './BottomSheetCustomizer';
 
 const ProductCard = memo(({ product, onAddSuccess }) => {
     const { addToCart } = useCart();
     const navigate = useNavigate();
-    const [showCustomize, setShowCustomize] = useState(false);
     const [added, setAdded] = useState(false);
     
     // Defensive checks for product properties
@@ -32,7 +30,7 @@ const ProductCard = memo(({ product, onAddSuccess }) => {
         if (!safeProduct.isAvailable) return;
         
         if (hasOptions) {
-            setShowCustomize(true);
+            navigate(`/product/${safeProduct.slug || safeProduct._id}`);
         } else {
             addToCart({
                 ...safeProduct,
@@ -45,16 +43,7 @@ const ProductCard = memo(({ product, onAddSuccess }) => {
             setTimeout(() => setAdded(false), 1500);
             onAddSuccess?.();
         }
-    }, [safeProduct, hasOptions, addToCart, onAddSuccess]);
-
-    const handleCustomizeClose = useCallback((didAdd = false) => {
-        setShowCustomize(false);
-        if (didAdd) {
-            setAdded(true);
-            setTimeout(() => setAdded(false), 1500);
-            onAddSuccess?.();
-        }
-    }, [onAddSuccess]);
+    }, [safeProduct, hasOptions, addToCart, onAddSuccess, navigate]);
 
     return (
         <>
@@ -147,13 +136,6 @@ const ProductCard = memo(({ product, onAddSuccess }) => {
                 </button>
             </div>
             
-            {/* Customize Modal */}
-            {showCustomize && (
-                <BottomSheetCustomizer 
-                    product={safeProduct} 
-                    onClose={() => { setShowCustomize(false); }}
-                />
-            )}
         </>
     );
 });

@@ -2,15 +2,16 @@ import React, { useState, useMemo, memo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaRegHeart, FaCheck } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
-import BottomSheetCustomizer from './BottomSheetCustomizer';
+
+const FAV_KEY = 'sewashubham_favorites';
+const getFavIds = () => { try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch { return []; } };
 
 const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = false }) => {
     const { addToCart } = useCart();
     const [showToast, setShowToast] = useState(false);
-    const [isWishlisted, setIsWishlisted] = useState(false);
-    const [showCustomize, setShowCustomize] = useState(false);
     const addBtnRef = useRef(null);
     const navigate = useNavigate();
+    const [isWishlisted, setIsWishlisted] = useState(() => getFavIds().includes(product?._id));
 
     const safeProduct = useMemo(() => ({
         _id: product?._id || '',
@@ -43,7 +44,7 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
         if (!safeProduct.isAvailable) return;
 
         if (hasOptions) {
-            setShowCustomize(true);
+            navigate(`/product/${safeProduct.slug || safeProduct._id}`);
             return;
         }
 
@@ -58,20 +59,20 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
         setShowToast(true);
         onAddSuccess?.();
         setTimeout(() => setShowToast(false), 1400);
-    }, [safeProduct, addToCart, onAddSuccess, hasOptions]);
-
-    const handleSheetClose = useCallback(() => {
-        setShowCustomize(false);
-        // Return focus
-        if (addBtnRef.current) {
-            addBtnRef.current.focus();
-        }
-    }, []);
+    }, [safeProduct, addToCart, onAddSuccess, hasOptions, navigate]);
 
     const toggleWishlist = useCallback((e) => {
         e?.stopPropagation();
-        setIsWishlisted(prev => !prev);
-    }, []);
+        setIsWishlisted(prev => {
+            const ids = getFavIds();
+            if (prev) {
+                localStorage.setItem(FAV_KEY, JSON.stringify(ids.filter(id => id !== safeProduct._id)));
+            } else {
+                localStorage.setItem(FAV_KEY, JSON.stringify([...ids, safeProduct._id]));
+            }
+            return !prev;
+        });
+    }, [safeProduct._id]);
 
     return (
         <>
@@ -190,15 +191,6 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
                 </div>
             </div>
         </div>
-
-        {/* Bottom Sheet Customizer */}
-        {showCustomize && (
-            <BottomSheetCustomizer
-                product={safeProduct}
-                onClose={handleSheetClose}
-                triggerRef={addBtnRef}
-            />
-        )}
 
         {/* Toast animation CSS */}
         <style>{`

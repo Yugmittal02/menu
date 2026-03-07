@@ -9,6 +9,7 @@ import AdminCustomers from "../components/admin/AdminCustomers";
 import AdminStats from "../components/admin/AdminStats";
 import AdminCategories from "../components/admin/AdminCategories";
 import AdminSettings from "../components/admin/AdminSettings";
+import AdminOffers from "../components/admin/AdminOffers";
 import ProductFormModal from "../components/admin/ProductFormModal";
 
 import {
@@ -193,6 +194,10 @@ const AdminDashboard = () => {
 
       {activeTab === 'categories' && (
         <AdminCategories />
+      )}
+
+      {activeTab === 'offers' && (
+        <AdminOffers />
       )}
 
       {activeTab === 'customers' && (
