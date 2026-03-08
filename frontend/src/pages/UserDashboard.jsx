@@ -54,10 +54,15 @@ const UserDashboard = () => {
 
     const loadOrders = useCallback(async () => {
         try {
+            const token = localStorage.getItem('customerToken');
+            if (!token) { setLoading(false); return; }
             const { data } = await fetchMyOrders();
             setOrders(data || []);
         } catch (err) {
             console.error(err);
+            if (err.response?.status === 401) {
+                setOrders([]);
+            }
         } finally {
             setLoading(false);
         }

@@ -204,25 +204,39 @@ const ProductDetail = () => {
                         Out of Stock
                     </div>
                 ) : existingQty > 0 ? (
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: 0,
-                        background: 'linear-gradient(135deg, #1B7E1B, #146114)',
-                        borderRadius: 16, overflow: 'hidden',
-                        boxShadow: '0 4px 16px rgba(27,126,27,0.3)',
-                        ...(isDesktop ? { width: '100%', justifyContent: 'space-between', height: 50 } : {})
-                    }}>
-                        <button onClick={handleDecrement} style={{...stepperBtnStyle, width: isDesktop ? 60 : 48}}>
-                            <FaMinus size={14} color="#FFF" />
-                        </button>
-                        <span style={{
-                            flex: isDesktop ? 1 : 'unset', minWidth: 36, textAlign: 'center',
-                            fontSize: 20, fontWeight: 800, color: '#FFF',
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'flex-end' }}>
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: 0,
+                            background: 'linear-gradient(135deg, #1B7E1B, #146114)',
+                            borderRadius: 16, overflow: 'hidden',
+                            boxShadow: '0 4px 16px rgba(27,126,27,0.3)',
+                            ...(isDesktop ? { width: '100%', justifyContent: 'space-between', height: 50 } : {})
                         }}>
-                            {existingQty}
-                        </span>
-                        <button onClick={handleIncrement} style={{...stepperBtnStyle, width: isDesktop ? 60 : 48}}>
-                            <FaPlus size={14} color="#FFF" />
-                        </button>
+                            <button onClick={handleDecrement} style={{...stepperBtnStyle, width: isDesktop ? 60 : 44}}>
+                                <FaMinus size={14} color="#FFF" />
+                            </button>
+                            <span style={{
+                                flex: isDesktop ? 1 : 'unset', minWidth: 32, textAlign: 'center',
+                                fontSize: 20, fontWeight: 800, color: '#FFF',
+                            }}>
+                                {existingQty}
+                            </span>
+                            <button onClick={handleIncrement} style={{...stepperBtnStyle, width: isDesktop ? 60 : 44}}>
+                                <FaPlus size={14} color="#FFF" />
+                            </button>
+                        </div>
+                        {!isDesktop && (
+                            <button onClick={() => navigate('/cart')} style={{
+                                padding: '14px 20px', borderRadius: 16, border: 'none',
+                                background: 'linear-gradient(135deg, #C97B4B, #E8956A)',
+                                color: '#FFF', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                                boxShadow: '0 4px 16px rgba(201,123,75,0.3)',
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                whiteSpace: 'nowrap',
+                            }}>
+                                <FaShoppingCart size={12} /> Go to Cart
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <button

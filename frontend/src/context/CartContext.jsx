@@ -51,7 +51,10 @@ export const CartProvider = ({ children }) => {
     // Debounce: wait 1s after last change before syncing
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     syncTimeoutRef.current = setTimeout(() => {
-      syncCartToDB(cart).catch(err => console.error("Cart sync error:", err));
+      syncCartToDB(cart).catch(err => {
+        if (err.response?.status === 401 || err.response?.status === 400) return;
+        console.error("Cart sync error:", err);
+      });
     }, 1000);
 
     return () => {
@@ -79,8 +82,9 @@ export const CartProvider = ({ children }) => {
           setCart(merged);
         }
       } catch (err) {
-        // Silently fail — localStorage cart as fallback
-        console.error("Failed to load cart from DB:", err);
+        if (err.response?.status !== 401 && err.response?.status !== 400) {
+          console.error("Failed to load cart from DB:", err);
+        }
       }
       hasLoadedFromDB.current = true;
     };

@@ -87,7 +87,7 @@ const AdminOffers = () => {
         try {
             await deleteOffer(id);
             await loadOffers();
-        } catch (err) {
+        } catch (_) {
             alert('Failed to delete offer');
         }
     };
@@ -96,7 +96,7 @@ const AdminOffers = () => {
         try {
             await toggleOffer(id);
             await loadOffers();
-        } catch (err) {
+        } catch (_) {
             alert('Failed to toggle offer');
         }
     };

@@ -17,6 +17,20 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+// Interceptor to handle expired/invalid tokens
+API.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401 && error.response?.data?.message === 'Invalid Token') {
+      localStorage.removeItem('customerToken');
+      localStorage.removeItem('customer');
+      sessionStorage.removeItem('customer');
+      sessionStorage.removeItem('customerToken');
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth
 export const registerCustomer = (data) => API.post("/auth/customer", data);
 export const adminLogin = (data) => API.post("/auth/admin/login", data);
