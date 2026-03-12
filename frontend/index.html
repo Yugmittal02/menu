@@ -296,18 +296,28 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- Service Worker Registration -->
+    <!-- Chunk load error recovery + Service Worker Registration -->
     <script>
+      // Clear the chunk reload flag on successful page load
+      window.addEventListener("load", () => {
+        sessionStorage.removeItem("chunk_reload");
+      });
+
+      // Catch Vite/dynamic import preload errors globally
+      window.addEventListener("vite:preloadError", () => {
+        window.location.reload();
+      });
+
+      // Service Worker Registration
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
             .register("/sw.js")
             .then((registration) => {
-              console.log("SW registered:", registration.scope);
+              // Check for SW updates on every page load
+              registration.update();
             })
-            .catch((error) => {
-              console.log("SW registration failed:", error);
-            });
+            .catch(() => {});
         });
       }
     </script>

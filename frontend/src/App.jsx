@@ -10,23 +10,41 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Keep Welcome static for instant landing page load
 import Welcome from './pages/Welcome';
 
-// Lazy load all other pages for code splitting
-const Home = lazy(() => import('./pages/Home'));
-const Cart = lazy(() => import('./pages/Cart'));
-const Payment = lazy(() => import('./pages/Payment'));
-const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
-const AdminLogin = lazy(() => import('./pages/AdminLogin'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const UserDashboard = lazy(() => import('./pages/UserDashboard'));
-const Login = lazy(() => import('./pages/Login'));
-const TermsConditions = lazy(() => import('./pages/TermsConditions'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
-const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
-const ContactUs = lazy(() => import('./pages/ContactUs'));
-const CategoryPage = lazy(() => import('./pages/CategoryPage'));
-const Categories = lazy(() => import('./pages/Categories'));
-const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+// Retry wrapper for lazy imports — handles stale chunk failures after deploy
+function lazyRetry(importFn) {
+  return lazy(() =>
+    importFn().catch(() => {
+      // If chunk load fails (stale hash after deploy), reload once
+      const hasReloaded = sessionStorage.getItem('chunk_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('chunk_reload', '1');
+        window.location.reload();
+        return new Promise(() => {}); // never resolves — page is reloading
+      }
+      sessionStorage.removeItem('chunk_reload');
+      // If reload didn't fix it, re-throw to show error boundary
+      return importFn();
+    })
+  );
+}
+
+// Lazy load all other pages for code splitting (with retry on chunk failure)
+const Home = lazyRetry(() => import('./pages/Home'));
+const Cart = lazyRetry(() => import('./pages/Cart'));
+const Payment = lazyRetry(() => import('./pages/Payment'));
+const OrderSuccess = lazyRetry(() => import('./pages/OrderSuccess'));
+const AdminLogin = lazyRetry(() => import('./pages/AdminLogin'));
+const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
+const UserDashboard = lazyRetry(() => import('./pages/UserDashboard'));
+const Login = lazyRetry(() => import('./pages/Login'));
+const TermsConditions = lazyRetry(() => import('./pages/TermsConditions'));
+const PrivacyPolicy = lazyRetry(() => import('./pages/PrivacyPolicy'));
+const RefundPolicy = lazyRetry(() => import('./pages/RefundPolicy'));
+const ShippingPolicy = lazyRetry(() => import('./pages/ShippingPolicy'));
+const ContactUs = lazyRetry(() => import('./pages/ContactUs'));
+const CategoryPage = lazyRetry(() => import('./pages/CategoryPage'));
+const Categories = lazyRetry(() => import('./pages/Categories'));
+const ProductDetail = lazyRetry(() => import('./pages/ProductDetail'));
 
 // Protected Route for Admin
 const AdminRoute = ({ children }) => {

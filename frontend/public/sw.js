@@ -1,11 +1,9 @@
-const CACHE_NAME = 'sewashubham-v1';
+const CACHE_NAME = 'sewashubham-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
   '/manifest.json'
 ];
 
-// Install event - cache assets
+// Install event - cache only static shell assets (NOT index.html)
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -14,7 +12,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - cleanup old caches
+// Activate event - cleanup ALL old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -30,16 +28,15 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
-// Fetch event - network first, fallback to cache
+// Fetch event - network first, fallback to cache (NEVER cache HTML)
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip API requests (don't cache)
+  // Skip API requests
   if (event.request.url.includes('/api/')) return;
 
-  // Skip Development resources (Vite, src, node_modules)
+  // Skip development resources
   if (
     event.request.url.includes('/src/') ||
     event.request.url.includes('/node_modules/') ||
@@ -49,39 +46,42 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Navigation requests (HTML pages) — ALWAYS go to network, never cache
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/manifest.json').then(() => {
+          return new Response(
+            '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>You are offline</h2><p>Please check your connection and try again.</p><button onclick="location.reload()">Retry</button></body></html>',
+            { status: 200, headers: { 'Content-Type': 'text/html' } }
+          );
+        });
+      })
+    );
+    return;
+  }
+
+  // Static assets (JS, CSS, images) — network first, cache fallback
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Check if we received a valid response
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
-
-        // Clone and cache the response
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseClone);
         });
-
         return response;
       })
       .catch(() => {
-        // Fallback to cache
         return caches.match(event.request).then((response) => {
-          // If not in cache, return a basic offline response or let it fail gracefully
-          // Returning undefined here would cause "Failed to convert value to Response"
           if (response) {
             return response;
           }
-          // Optional: Return a specific offline page if navigating
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-          // Otherwise, we have to return something to satisfy the promise if we handled the request
-          // But since this is a catch block for the fetch we *must* return a Response.
-          return new Response("Network error happened", {
+          return new Response('Network error', {
             status: 408,
-            headers: { "Content-Type": "text/plain" },
+            headers: { 'Content-Type': 'text/plain' },
           });
         });
       })

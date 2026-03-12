@@ -1,20 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: null, // We handle registration manually in index.html
-      manifest: false, // Use the manifest.json from public folder
-      devOptions: {
-        enabled: false // Disable in dev to avoid issues
-      }
-    })
+    // PWA handled by custom sw.js in public/ folder — no VitePWA generation
   ],
   server: {
     host: true, // Allow external access (mobile)
