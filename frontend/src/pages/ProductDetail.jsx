@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProductBySlug, fetchProducts } from '../services/api';
 import { useCart } from '../context/CartContext';
 import ProductCardNew from '../components/ProductCardNew';
+import { imagePresets } from '../services/imageOptimizer';
 import {
     FaArrowLeft, FaShareAlt, FaShoppingCart,
     FaWhatsapp, FaInstagram, FaLink, FaCheck,
@@ -368,7 +369,7 @@ const ProductDetail = () => {
                         <div className="pd-image-container">
                             {safeProduct.image ? (
                                 <img
-                                    src={safeProduct.image}
+                                    src={imagePresets.detail(safeProduct.image)}
                                     alt={safeProduct.name}
                                     style={{
                                         width: '100%', height: '100%', objectFit: 'cover',

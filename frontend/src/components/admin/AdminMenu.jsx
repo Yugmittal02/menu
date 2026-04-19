@@ -11,7 +11,8 @@ const AdminMenu = ({
     onClearAll
 }) => {
     const [search, setSearch] = useState('');
-    const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [clearStep, setClearStep] = useState(0); // 0=hidden, 1=first confirm, 2=type DELETE
+    const [deleteText, setDeleteText] = useState('');
     const [categories, setCategories] = useState([]);
     const [catLoading, setCatLoading] = useState(true);
     const [activeCatFilter, setActiveCatFilter] = useState('All');
@@ -40,18 +41,25 @@ const AdminMenu = ({
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
             const catName = getCatName(p);
-            // Text search
             const matchesSearch = search === '' ||
                 p.name.toLowerCase().includes(search.toLowerCase()) ||
                 catName.toLowerCase().includes(search.toLowerCase());
-
-            // Category filter
             const matchesCat = activeCatFilter === 'All' ||
                 (p.category && typeof p.category === 'object' && p.category._id === activeCatFilter);
-
             return matchesSearch && matchesCat;
         });
     }, [products, search, activeCatFilter]);
+
+    const handleClearStep1 = () => setClearStep(1);
+    const handleClearStep2 = () => { setClearStep(2); setDeleteText(''); };
+    const handleFinalClear = () => {
+        if (deleteText === 'DELETE') {
+            onClearAll();
+            setClearStep(0);
+            setDeleteText('');
+        }
+    };
+    const closeClearModal = () => { setClearStep(0); setDeleteText(''); };
 
     return (
         <div className="px-4 pb-20 pt-4">
@@ -62,7 +70,7 @@ const AdminMenu = ({
                     <div className="flex gap-2">
                         {products.length > 0 && (
                             <button
-                                onClick={() => setShowClearConfirm(true)}
+                                onClick={handleClearStep1}
                                 className="px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 active:scale-95 transition-transform text-sm"
                                 style={{ background: '#FEE2E2', color: '#DC2626', border: '2px solid #FECACA' }}
                             >
@@ -97,7 +105,6 @@ const AdminMenu = ({
                 {/* Category Filter Bar */}
                 <div className="flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
                     {catLoading ? (
-                        // Skeleton pills
                         [...Array(4)].map((_, i) => (
                             <div key={i} className="flex-shrink-0 w-20 h-8 rounded-full animate-pulse" style={{ background: '#E8E3DB' }} />
                         ))
@@ -214,8 +221,8 @@ const AdminMenu = ({
                 ))}
             </div>
 
-            {/* Clear All Confirmation Modal */}
-            {showClearConfirm && (
+            {/* ═══ CLEAR ALL — STEP 1: First Confirmation ═══ */}
+            {clearStep === 1 && (
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
                     <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl">
                         <div className="text-center mb-6">
@@ -225,23 +232,71 @@ const AdminMenu = ({
                             </div>
                             <h3 className="text-xl font-bold mb-2" style={{ color: '#1C1C1C' }}>Clear All Menu Items?</h3>
                             <p className="text-sm" style={{ color: '#7E7E7E' }}>
-                                This will permanently delete <span className="font-bold" style={{ color: '#DC2626' }}>{products.length} items</span> from the menu. This cannot be undone.
+                                This will permanently delete <span className="font-bold" style={{ color: '#DC2626' }}>{products.length} items</span> from the menu.
                             </p>
                         </div>
                         <div className="flex gap-3">
                             <button
-                                onClick={() => setShowClearConfirm(false)}
+                                onClick={closeClearModal}
                                 className="flex-1 py-3 font-bold rounded-xl active:scale-95 transition-transform"
                                 style={{ background: '#FAF7F2', color: '#7E7E7E', border: '2px solid #E8E3DB' }}
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={() => { onClearAll(); setShowClearConfirm(false); }}
+                                onClick={handleClearStep2}
                                 className="flex-1 py-3 font-bold rounded-xl text-white active:scale-95 transition-transform"
                                 style={{ background: '#DC2626', boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)' }}
                             >
-                                Delete All
+                                Yes, Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ═══ CLEAR ALL — STEP 2: Type "DELETE" to confirm ═══ */}
+            {clearStep === 2 && (
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
+                                style={{ background: '#FEE2E2' }}>
+                                <span className="text-3xl">⚠️</span>
+                            </div>
+                            <h3 className="text-lg font-bold mb-2" style={{ color: '#DC2626' }}>Final Confirmation</h3>
+                            <p className="text-sm mb-4" style={{ color: '#7E7E7E' }}>
+                                Type <span className="font-black text-base" style={{ color: '#DC2626' }}>DELETE</span> below to confirm
+                            </p>
+                            <input
+                                type="text"
+                                placeholder='Type "DELETE"'
+                                value={deleteText}
+                                onChange={(e) => setDeleteText(e.target.value.toUpperCase())}
+                                className="w-full px-4 py-3 rounded-xl text-center font-bold text-lg outline-none"
+                                style={{
+                                    border: deleteText === 'DELETE' ? '2px solid #DC2626' : '2px solid #E8E3DB',
+                                    background: deleteText === 'DELETE' ? '#FEE2E2' : '#FFFFFF',
+                                    color: '#DC2626',
+                                }}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={closeClearModal}
+                                className="flex-1 py-3 font-bold rounded-xl active:scale-95 transition-transform"
+                                style={{ background: '#FAF7F2', color: '#7E7E7E', border: '2px solid #E8E3DB' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleFinalClear}
+                                disabled={deleteText !== 'DELETE'}
+                                className="flex-1 py-3 font-bold rounded-xl text-white active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                                style={{ background: '#DC2626', boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)' }}
+                            >
+                                Delete All ({products.length})
                             </button>
                         </div>
                     </div>

@@ -45,6 +45,10 @@ const categorySchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    subcategories: [{
+        name: { type: String, trim: true, required: true },
+        image: { type: String, default: '' }
+    }],
     createdAt: {
         type: Date,
         default: Date.now

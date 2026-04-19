@@ -11,6 +11,7 @@ import {
   logUserActivity,
   getRazorpayKey,
 } from "../services/api";
+import { imagePresets } from "../services/imageOptimizer";
 import {
   FaArrowLeft,
   FaMoneyBillWave,
@@ -514,7 +515,7 @@ const Payment = () => {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-[var(--bg-cream)] border border-[var(--border-light)] flex items-center justify-center text-lg">
-                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover rounded-lg" /> : '🍰'}
+                    {item.image ? <img src={imagePresets.cartItem(item.image)} alt="" className="w-full h-full object-cover rounded-lg" loading="lazy" /> : '🍰'}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[var(--text-dark)] font-medium">{item.name}</span>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useCallback } from "react";
 import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
+import { imagePresets } from "../services/imageOptimizer";
 import {
   FaTimes,
   FaTrash,
@@ -133,7 +134,7 @@ const SideCart = memo(({ isOpen, onClose }) => {
                     {/* Item Image */}
                     {item.image && (
                       <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0" style={{ border: '2px solid #E8E3DB' }}>
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        <img src={imagePresets.cartItem(item.image)} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     )}
 

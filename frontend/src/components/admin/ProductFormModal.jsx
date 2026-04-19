@@ -19,6 +19,7 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
         image: product?.image || "",
         sizes: product?.sizes || [],
         addons: product?.addons || [],
+        subcategories: product?.subcategories || [],
         isBestseller: product?.isBestseller || false,
     });
     const [newSize, setNewSize] = useState({ name: "", price: "" });
@@ -91,12 +92,26 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
     const removeAddon = (index) => setForm({ ...form, addons: form.addons.filter((_, i) => i !== index) });
 
     const selectCategory = (catId) => {
-        setForm({ ...form, category: catId });
+        setForm({ ...form, category: catId, subcategories: [] });
         setCategoryDropdownOpen(false);
+    };
+
+    const toggleSubcategory = (sub) => {
+        const subs = form.subcategories || [];
+        if (subs.includes(sub)) {
+            setForm({ ...form, subcategories: subs.filter(s => s !== sub) });
+        } else {
+            setForm({ ...form, subcategories: [...subs, sub] });
+        }
     };
 
     // Find the selected category object for display
     const selectedCat = categories.find(c => c._id === form.category);
+    // Normalize subcategories to {name, image} objects
+    const availableSubcategories = (selectedCat?.subcategories || []).map(sub => {
+        if (typeof sub === 'string') return { name: sub, image: '' };
+        return { name: sub.name || '', image: sub.image || '' };
+    });
 
     const inputStyle = {
         background: '#FAF7F2',
@@ -124,10 +139,10 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
                 <form onSubmit={handleSubmit} className="p-4 overflow-y-auto space-y-4"
                     style={{ maxHeight: 'calc(92vh - 60px)', paddingBottom: '24px' }}>
 
-                    {/* Image Upload */}
+                    {/* Image Upload / URL */}
                     <div>
                         <p className="text-xs font-bold uppercase mb-2" style={{ color: '#8B7355' }}>Product Image</p>
-                        <div className="flex gap-3 items-center">
+                        <div className="flex gap-3 items-center mb-2">
                             {form.image ? (
                                 <div className="w-20 h-20 rounded-2xl bg-cover bg-center overflow-hidden flex-shrink-0"
                                     style={{ backgroundImage: `url(${form.image})`, border: '3px solid #E8E3DB' }} />
@@ -137,20 +152,30 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
                                     <FaCamera size={20} style={{ color: '#C97B4B' }} />
                                 </div>
                             )}
-                            <label className="flex-1">
-                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                                <div className="w-full py-3 rounded-xl font-bold text-center text-sm cursor-pointer active:scale-95 transition-all"
-                                    style={uploading
-                                        ? { background: '#E8E3DB', color: '#7E7E7E' }
-                                        : { background: 'linear-gradient(135deg, #C97B4B 0%, #E8956A 100%)', color: '#FFFFFF' }
-                                    }>
-                                    {uploading ? 'Uploading...' : form.image ? '📷 Change' : '📷 Upload Image'}
-                                </div>
-                            </label>
+                            <div className="flex-1 flex flex-col gap-2">
+                                <label>
+                                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                    <div className="w-full py-2.5 rounded-xl font-bold text-center text-sm cursor-pointer active:scale-95 transition-all"
+                                        style={uploading
+                                            ? { background: '#E8E3DB', color: '#7E7E7E' }
+                                            : { background: 'linear-gradient(135deg, #C97B4B 0%, #E8956A 100%)', color: '#FFFFFF' }
+                                        }>
+                                        {uploading ? 'Uploading...' : '📁 Upload File'}
+                                    </div>
+                                </label>
+                                <input
+                                    type="url"
+                                    placeholder="Or paste image URL"
+                                    value={form.image}
+                                    onChange={(e) => setForm({ ...form, image: e.target.value })}
+                                    className="w-full rounded-xl p-2.5 text-sm outline-none"
+                                    style={inputStyle}
+                                />
+                            </div>
                         </div>
                         {form.image && (
                             <button type="button" onClick={() => setForm({ ...form, image: "" })}
-                                className="text-xs font-medium mt-1" style={{ color: '#DC2626' }}>
+                                className="text-xs font-medium" style={{ color: '#DC2626' }}>
                                 Remove Image
                             </button>
                         )}
@@ -223,6 +248,35 @@ const ProductFormModal = ({ product, onClose, onSave }) => {
                             </div>
                         )}
                     </div>
+
+                    {/* Subcategories (shown when category has subcategories) */}
+                    {availableSubcategories.length > 0 && (
+                        <div>
+                            <p className="text-xs font-bold uppercase mb-1.5" style={{ color: '#8B7355' }}>Subcategory</p>
+                            <div className="flex flex-wrap gap-2">
+                                {availableSubcategories.map(sub => (
+                                    <button key={sub.name} type="button"
+                                        onClick={() => toggleSubcategory(sub.name)}
+                                        className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5"
+                                        style={{
+                                            background: (form.subcategories || []).includes(sub.name)
+                                                ? 'linear-gradient(135deg, #C97B4B 0%, #E8956A 100%)'
+                                                : '#FAF7F2',
+                                            color: (form.subcategories || []).includes(sub.name) ? '#FFFFFF' : '#7E7E7E',
+                                            border: (form.subcategories || []).includes(sub.name) ? 'none' : '2px solid #E8E3DB',
+                                            boxShadow: (form.subcategories || []).includes(sub.name) ? '0 2px 8px rgba(201,123,75,0.3)' : 'none'
+                                        }}
+                                    >
+                                        {sub.image && (
+                                            <img src={sub.image} alt="" className="w-5 h-5 rounded-full object-cover" style={{ border: '1px solid rgba(255,255,255,0.3)' }} />
+                                        )}
+                                        {sub.name}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-[10px] mt-1" style={{ color: '#A0998F' }}>Select subcategories this product belongs to</p>
+                        </div>
+                    )}
 
                     {/* Price */}
                     <div>

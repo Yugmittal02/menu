@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import ProductCardNew from '../components/ProductCardNew';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import Footer from '../components/Footer';
+import { imagePresets } from '../services/imageOptimizer';
 
 // Fallback theme if API doesn't return colors
 const DEFAULT_THEME = { primary: '#C97B4B', light: '#E8956A', glow: 'rgba(201,123,75,0.25)', bg: '#FDF8F4' };
@@ -71,16 +72,28 @@ const CategoryPage = () => {
         setSortOption('recommended');
     }, [categoryId]);
 
-    // Collect unique subcategories from loaded products
+    // Collect unique subcategories — prefer category-defined, fallback to product-derived
+    // Now subcategories are objects with { name, image }
     const subcategories = useMemo(() => {
-        const subs = new Set();
+        // Use category-level subcategories if available
+        if (category?.subcategories && category.subcategories.length > 0) {
+            const subs = category.subcategories.map(sub => {
+                // Handle both old string format and new object format
+                if (typeof sub === 'string') return { name: sub, image: '' };
+                return { name: sub.name || sub, image: sub.image || '' };
+            });
+            return [{ name: 'All', image: '' }, ...subs];
+        }
+        // Fallback: derive from products
+        const subSet = new Set();
         allProducts.forEach(p => {
             if (Array.isArray(p.subcategories)) {
-                p.subcategories.forEach(s => subs.add(s));
+                p.subcategories.forEach(s => subSet.add(s));
             }
         });
-        return ['All', ...Array.from(subs).sort()];
-    }, [allProducts]);
+        const derived = Array.from(subSet).sort().map(s => ({ name: s, image: '' }));
+        return [{ name: 'All', image: '' }, ...derived];
+    }, [allProducts, category]);
 
     const filteredProducts = useMemo(() => {
         let filtered = [...allProducts];
@@ -121,6 +134,9 @@ const CategoryPage = () => {
 
     const catName = category?.name || categoryId;
     const catIcon = category?.icon || '📦';
+
+    // Check if this category has image-based subcategories
+    const hasImageSubcategories = subcategories.some(s => s.image && s.name !== 'All');
 
     return (
         <div className="min-h-screen pb-24" style={{ background: theme.bg }}>
@@ -183,7 +199,7 @@ const CategoryPage = () => {
             <div className="mx-4 mt-4">
                 <div className="relative rounded-3xl overflow-hidden" style={{ boxShadow: `0 8px 24px ${theme.glow}` }}>
                     {category?.image ? (
-                        <img src={category.image} alt={`${catName} Banner`} className="w-full h-40 md:h-48 object-cover" />
+                        <img src={imagePresets.banner(category.image)} alt={`${catName} Banner`} className="w-full h-40 md:h-48 object-cover" loading="eager" />
                     ) : (
                         <div className="w-full h-40 md:h-48" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.light})` }} />
                     )}
@@ -199,29 +215,130 @@ const CategoryPage = () => {
                 </div>
             </div>
 
-            {/* Subcategory Tabs */}
+            {/* Subcategory Tabs — Image-based or text-based */}
             {subcategories.length > 1 && (
                 <div className="mt-5 px-4">
-                    <div className="flex overflow-x-auto pb-3 gap-2 hide-scrollbar snap-x" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        {subcategories.map((sub) => (
-                            <button
-                                key={sub}
-                                onClick={() => { setActiveSubcategory(sub); setSortOption('recommended'); }}
-                                className="flex-shrink-0 px-5 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap snap-start active:scale-95"
-                                style={{
-                                    background: activeSubcategory === sub
-                                        ? `linear-gradient(135deg, ${theme.primary} 0%, ${theme.light} 100%)`
-                                        : '#FFFFFF',
-                                    color: activeSubcategory === sub ? 'white' : '#666',
-                                    border: activeSubcategory === sub ? 'none' : '1.5px solid #E8E3DB',
-                                    boxShadow: activeSubcategory === sub
-                                        ? `0 6px 16px ${theme.glow}` : '0 2px 8px rgba(0,0,0,0.04)'
-                                }}
-                            >
-                                {sub}
-                            </button>
-                        ))}
-                    </div>
+                    {hasImageSubcategories ? (
+                        /* ───── IMAGE-BASED SUBCATEGORY CARDS ───── */
+                        <div className="flex overflow-x-auto pb-3 gap-3 hide-scrollbar snap-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+                            {subcategories.map((sub) => {
+                                const isActive = activeSubcategory === sub.name;
+                                return (
+                                    <button
+                                        key={sub.name}
+                                        onClick={() => { setActiveSubcategory(sub.name); setSortOption('recommended'); }}
+                                        className="flex-shrink-0 flex flex-col items-center gap-1.5 snap-start active:scale-95 transition-all"
+                                        style={{ minWidth: '72px' }}
+                                    >
+                                        {/* Image circle */}
+                                        <div
+                                            className="relative"
+                                            style={{
+                                                width: '64px',
+                                                height: '64px',
+                                                borderRadius: '50%',
+                                                padding: '3px',
+                                                background: isActive
+                                                    ? `linear-gradient(135deg, ${theme.primary}, ${theme.light})`
+                                                    : '#E8E3DB',
+                                                boxShadow: isActive
+                                                    ? `0 4px 16px ${theme.glow}`
+                                                    : '0 2px 8px rgba(0,0,0,0.06)',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    background: '#FFFFFF',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                            >
+                                                {sub.name === 'All' ? (
+                                                    <div style={{
+                                                        width: '100%', height: '100%',
+                                                        background: `linear-gradient(135deg, ${theme.primary}22, ${theme.light}33)`,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                    }}>
+                                                        <span style={{ fontSize: '24px' }}>🍽️</span>
+                                                    </div>
+                                                ) : sub.image ? (
+                                                    <img
+                                                        src={imagePresets.subcategoryIcon(sub.image)}
+                                                        alt={sub.name}
+                                                        loading="lazy"
+                                                        style={{
+                                                            width: '100%', height: '100%',
+                                                            objectFit: 'cover'
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div style={{
+                                                        width: '100%', height: '100%',
+                                                        background: `linear-gradient(135deg, ${theme.primary}15, ${theme.light}25)`,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                    }}>
+                                                        <span style={{ fontSize: '20px', filter: 'grayscale(0.3)' }}>🍴</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* Active dot indicator */}
+                                            {isActive && (
+                                                <div style={{
+                                                    position: 'absolute', bottom: '-2px', left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                    width: '8px', height: '8px', borderRadius: '50%',
+                                                    background: theme.primary,
+                                                    boxShadow: `0 0 8px ${theme.glow}`
+                                                }} />
+                                            )}
+                                        </div>
+                                        {/* Label */}
+                                        <span style={{
+                                            fontSize: '11px',
+                                            fontWeight: isActive ? 700 : 500,
+                                            color: isActive ? theme.primary : '#888',
+                                            whiteSpace: 'nowrap',
+                                            maxWidth: '72px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            transition: 'all 0.3s ease',
+                                            lineHeight: '1.2'
+                                        }}>
+                                            {sub.name}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        /* ───── FALLBACK: TEXT-BASED PILL TABS ───── */
+                        <div className="flex overflow-x-auto pb-3 gap-2 hide-scrollbar snap-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+                            {subcategories.map((sub) => (
+                                <button
+                                    key={sub.name}
+                                    onClick={() => { setActiveSubcategory(sub.name); setSortOption('recommended'); }}
+                                    className="flex-shrink-0 px-5 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap snap-start active:scale-95"
+                                    style={{
+                                        background: activeSubcategory === sub.name
+                                            ? `linear-gradient(135deg, ${theme.primary} 0%, ${theme.light} 100%)`
+                                            : '#FFFFFF',
+                                        color: activeSubcategory === sub.name ? 'white' : '#666',
+                                        border: activeSubcategory === sub.name ? 'none' : '1.5px solid #E8E3DB',
+                                        boxShadow: activeSubcategory === sub.name
+                                            ? `0 6px 16px ${theme.glow}` : '0 2px 8px rgba(0,0,0,0.04)'
+                                    }}
+                                >
+                                    {sub.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

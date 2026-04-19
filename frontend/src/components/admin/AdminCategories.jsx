@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaImage } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaImage, FaCamera } from 'react-icons/fa';
 import { fetchCategories, createCategory, updateCategory, deleteCategory, uploadImage } from '../../services/api';
 
 const AdminCategories = () => {
@@ -8,10 +8,13 @@ const AdminCategories = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingSubIdx, setUploadingSubIdx] = useState(-1);
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [form, setForm] = useState({
     name: '', description: '', image: '', icon: '📦',
     colorFrom: '#F97316', colorTo: '#FB923C',
-    isActive: true, isQuickPick: false, sortOrder: 0
+    isActive: true, isQuickPick: false, sortOrder: 0,
+    subcategories: []
   });
 
   useEffect(() => { loadCategories(); }, []);
@@ -25,19 +28,66 @@ const AdminCategories = () => {
   };
 
   const resetForm = () => {
-    setForm({ name: '', description: '', image: '', icon: '📦', colorFrom: '#F97316', colorTo: '#FB923C', isActive: true, isQuickPick: false, sortOrder: 0 });
+    setForm({ name: '', description: '', image: '', icon: '📦', colorFrom: '#F97316', colorTo: '#FB923C', isActive: true, isQuickPick: false, sortOrder: 0, subcategories: [] });
     setEditing(null);
+    setNewSubcategoryName('');
   };
 
   const openAdd = () => { resetForm(); setShowModal(true); };
   const openEdit = (cat) => {
     setEditing(cat);
+    // Normalize subcategories to {name, image} objects
+    const subs = (cat.subcategories || []).map(sub => {
+      if (typeof sub === 'string') return { name: sub, image: '' };
+      return { name: sub.name || '', image: sub.image || '' };
+    });
     setForm({
       name: cat.name, description: cat.description || '', image: cat.image || '',
       icon: cat.icon || '📦', colorFrom: cat.colorFrom || '#F97316', colorTo: cat.colorTo || '#FB923C',
-      isActive: cat.isActive, isQuickPick: cat.isQuickPick || false, sortOrder: cat.sortOrder || 0
+      isActive: cat.isActive, isQuickPick: cat.isQuickPick || false, sortOrder: cat.sortOrder || 0,
+      subcategories: subs
     });
+    setNewSubcategoryName('');
     setShowModal(true);
+  };
+
+  const addSubcategory = () => {
+    const name = newSubcategoryName.trim();
+    if (!name) return;
+    if (form.subcategories.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+      return alert('This subcategory already exists');
+    }
+    setForm({ ...form, subcategories: [...form.subcategories, { name, image: '' }] });
+    setNewSubcategoryName('');
+  };
+
+  const removeSubcategory = (index) => {
+    setForm({ ...form, subcategories: form.subcategories.filter((_, i) => i !== index) });
+  };
+
+  const handleSubcategoryImageUpload = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingSubIdx(index);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const { data } = await uploadImage(formData);
+      setForm(prev => {
+        const updated = [...prev.subcategories];
+        updated[index] = { ...updated[index], image: data.url };
+        return { ...prev, subcategories: updated };
+      });
+    } catch (err) { alert('Subcategory image upload failed'); }
+    setUploadingSubIdx(-1);
+  };
+
+  const removeSubcategoryImage = (index) => {
+    setForm(prev => {
+      const updated = [...prev.subcategories];
+      updated[index] = { ...updated[index], image: '' };
+      return { ...prev, subcategories: updated };
+    });
   };
 
   const handleImageUpload = async (e) => {
@@ -135,6 +185,25 @@ const AdminCategories = () => {
               <p className="text-xs mt-0.5" style={{ color: '#A0998F' }}>
                 {cat.productCount || 0} products • Sort: {cat.sortOrder || 0}
               </p>
+              {cat.subcategories && cat.subcategories.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {cat.subcategories.slice(0, 4).map((sub, i) => {
+                    const subName = typeof sub === 'string' ? sub : (sub.name || sub);
+                    const subImage = typeof sub === 'string' ? '' : (sub.image || '');
+                    return (
+                      <span key={i} className="text-[9px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1" style={{ background: '#FEF3E2', color: '#C97B4B' }}>
+                        {subImage && (
+                          <img src={subImage} alt="" className="w-3 h-3 rounded-full object-cover" />
+                        )}
+                        {subName}
+                      </span>
+                    );
+                  })}
+                  {cat.subcategories.length > 4 && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: '#F5F0E8', color: '#A0998F' }}>+{cat.subcategories.length - 4} more</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Actions */}
@@ -240,14 +309,125 @@ const AdminCategories = () => {
               {/* Image Upload */}
               <div>
                 <label className="text-xs font-semibold mb-1 block" style={{ color: '#7E7E7E' }}>Image</label>
+                <div className="flex flex-col gap-2 mb-2">
+                  <div className="flex gap-2">
+                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl cursor-pointer text-sm font-medium"
+                      style={{ background: '#FAF7F2', border: '2px dashed #E8E3DB', color: '#7E7E7E' }}>
+                      <FaImage /> {uploading ? 'Uploading...' : 'Upload File'}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="Or paste image URL"
+                      value={form.image}
+                      onChange={e => setForm({...form, image: e.target.value})}
+                      className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
+                      style={{ background: '#FAF7F2', border: '2px solid #E8E3DB', color: '#1C1C1C' }}
+                    />
+                  </div>
+                </div>
                 {form.image && (
-                  <img src={form.image} alt="" className="w-full h-32 object-cover rounded-xl mb-2" />
+                  <div className="relative">
+                    <img src={form.image} alt="" className="w-full h-32 object-cover rounded-xl" />
+                    <button type="button" onClick={() => setForm({...form, image: ''})}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-lg px-3 py-1.5 text-xs font-bold shadow opacity-90 hover:opacity-100">
+                      Remove Image
+                    </button>
+                  </div>
                 )}
-                <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl cursor-pointer text-sm font-medium"
-                  style={{ background: '#FAF7F2', border: '2px dashed #E8E3DB', color: '#7E7E7E' }}>
-                  <FaImage /> {uploading ? 'Uploading...' : 'Upload Image'}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+              </div>
+
+              {/* Subcategories — with image upload */}
+              <div>
+                <label className="text-xs font-semibold mb-2 block" style={{ color: '#7E7E7E' }}>
+                  Subcategories {form.subcategories.length > 0 && <span style={{ color: '#C97B4B' }}>({form.subcategories.length})</span>}
                 </label>
+
+                {form.subcategories.length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {form.subcategories.map((sub, i) => (
+                      <div key={i} className="rounded-xl p-3 flex flex-col gap-2"
+                        style={{ background: '#FAF7F2', border: '1.5px solid #E8E3DB' }}>
+                        
+                        <div className="flex items-center gap-3">
+                          {/* Subcategory Image Trigger */}
+                          <div className="flex-shrink-0">
+                            {sub.image ? (
+                              <div className="relative w-12 h-12 rounded-xl overflow-hidden" style={{ border: '2px solid #E8E3DB' }}>
+                                <img src={sub.image} alt={sub.name} className="w-full h-full object-cover" />
+                                <button type="button" onClick={() => removeSubcategoryImage(i)}
+                                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px]"
+                                  style={{ background: '#DC2626', lineHeight: 1 }}>×</button>
+                              </div>
+                            ) : (
+                              <label className="w-12 h-12 rounded-xl flex items-center justify-center cursor-pointer"
+                                style={{ background: '#FEF3E2', border: '2px dashed #C97B4B' }}>
+                                {uploadingSubIdx === i ? (
+                                  <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <FaCamera size={14} style={{ color: '#C97B4B' }} />
+                                )}
+                                <input type="file" accept="image/*" className="hidden"
+                                  onChange={(e) => handleSubcategoryImageUpload(e, i)}
+                                  disabled={uploadingSubIdx === i} />
+                              </label>
+                            )}
+                          </div>
+
+                          {/* Name + info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate" style={{ color: '#1C1C1C' }}>{sub.name}</p>
+                            <p className="text-[10px]" style={{ color: '#A0998F' }}>
+                              {sub.image ? '✅ Image added' : '📷 Add image or edit URL'}
+                            </p>
+                          </div>
+
+                          {/* Remove Subcategory */}
+                          <button type="button" onClick={() => removeSubcategory(i)}
+                            className="p-2 rounded-lg flex-shrink-0" style={{ color: '#DC2626' }}>
+                            <FaTrash size={12} />
+                          </button>
+                        </div>
+                        
+                        {/* URL input field */}
+                        <input
+                          type="url"
+                          placeholder="Or paste image URL directly..."
+                          value={sub.image}
+                          onChange={(e) => {
+                            setForm(prev => {
+                              const updated = [...prev.subcategories];
+                              updated[i] = { ...updated[i], image: e.target.value };
+                              return { ...prev, subcategories: updated };
+                            });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg text-xs outline-none"
+                          style={{ background: '#FFFFFF', border: '1px solid #E8E3DB', color: '#1C1C1C' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new subcategory */}
+                <div className="flex gap-2">
+                  <input
+                    value={newSubcategoryName}
+                    onChange={e => setNewSubcategoryName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubcategory(); } }}
+                    placeholder="e.g. Momos, Burger, Pasta..."
+                    className="flex-1 px-4 py-2.5 rounded-xl text-sm"
+                    style={{ background: '#FAF7F2', border: '2px solid #E8E3DB', color: '#1C1C1C' }}
+                  />
+                  <button type="button" onClick={addSubcategory}
+                    className="px-4 py-2.5 rounded-xl text-white font-semibold text-sm active:scale-[0.97] flex-shrink-0"
+                    style={{ background: '#C97B4B' }}>
+                    <FaPlus size={12} />
+                  </button>
+                </div>
+                <p className="text-[10px] mt-1.5" style={{ color: '#A0998F' }}>
+                  💡 Add subcategories first, then upload images for each. Images appear as visual tabs for customers.
+                </p>
               </div>
 
               {/* Toggles */}

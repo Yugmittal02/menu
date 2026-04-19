@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { getFeeSettings } from '../services/api';
+import { imagePresets } from '../services/imageOptimizer';
 import {
   FaArrowLeft, FaTruck, FaUtensils, FaMinus, FaPlus, FaTrash, FaMapMarkerAlt,
   FaEdit, FaShoppingBag, FaClock, FaShieldAlt
@@ -174,7 +175,7 @@ const Cart = () => {
               style={{ animationDelay: `${index * 0.1}s` }}>
               <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ border: '2px solid #E8E3DB' }}>
                 {item.image ? (
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={imagePresets.cartItem(item.image)} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-2xl" style={{ background: '#FAF7F2' }}>🍰</div>
                 )}

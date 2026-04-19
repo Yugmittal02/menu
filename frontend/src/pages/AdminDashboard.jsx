@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaUtensils } from "react-icons/fa";
+import { FaUtensils, FaBell, FaBellSlash } from "react-icons/fa";
+import toast, { Toaster } from "react-hot-toast";
 
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminOrders from "../components/admin/AdminOrders";
@@ -11,6 +12,7 @@ import AdminCategories from "../components/admin/AdminCategories";
 import AdminSettings from "../components/admin/AdminSettings";
 import AdminOffers from "../components/admin/AdminOffers";
 import ProductFormModal from "../components/admin/ProductFormModal";
+import PinLock from "../components/admin/PinLock";
 
 import {
   deleteProduct,
@@ -25,7 +27,11 @@ import {
   updateStoreSettings,
 } from "../services/api";
 
+import { playOrderSound } from "../services/notificationSound";
 import { useAuth } from "../context/AuthContext";
+
+// Session key to track unlocked tabs
+const PIN_UNLOCK_KEY = 'sewashubham_pin_unlocked';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -44,24 +50,136 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showStockConfirm, setShowStockConfirm] = useState(null);
 
-
-  // Settings
+  // Store settings
   const [storeSettings, setStoreSettings] = useState({ isOpen: true });
 
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
+  // Sound notification toggle
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    const saved = localStorage.getItem('sewashubham_sound_enabled');
+    return saved !== 'false'; // Default enabled
+  });
+
+  // PIN lock state for Stats and Settings
+  const [unlockedTabs, setUnlockedTabs] = useState(() => {
+    // Reset unlock on page load (session-based)
+    sessionStorage.removeItem(PIN_UNLOCK_KEY);
+    return { revenue: false, settings: false };
+  });
+
+  // Track previous order count for new order detection
+  const prevOrderCountRef = useRef(null);
+  const isFirstLoadRef = useRef(true);
+  const isPollingRef = useRef(false); // Mutex guard to prevent overlapping polls
+
+  // ═══════════════════════════════════════════
+  // PWA INSTALLATION LOGIC
+  // ═══════════════════════════════════════════
+
   useEffect(() => {
-    loadOrders();
-    loadProducts();
-    loadStoreSettings();
-    const interval = setInterval(loadOrders, 30000);
-    return () => clearInterval(interval);
+    const handler = (e) => {
+      e.preventDefault(); // Prevent the mini-infobar from appearing on mobile
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    window.addEventListener('appinstalled', () => {
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
+      console.log('PWA was installed');
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
   }, []);
 
-  const loadOrders = async () => {
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
+    }
+  };
+
+  // ═══════════════════════════════════════════
+  // DATA LOADING
+  // ═══════════════════════════════════════════
+
+  const loadOrders = useCallback(async () => {
+    // Prevent overlapping requests — if a poll is still in progress, skip
+    if (isPollingRef.current) return;
+    isPollingRef.current = true;
+
     try {
       const { data } = await fetchAllOrders();
-      setOrders(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-    } catch (err) { console.error(err); }
-  };
+      const sorted = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Detect new orders (not on first load)
+      if (!isFirstLoadRef.current && prevOrderCountRef.current !== null) {
+        const newCount = sorted.length;
+        const prevCount = prevOrderCountRef.current;
+
+        if (newCount > prevCount) {
+          const diff = newCount - prevCount;
+          const newOrder = sorted[0]; // Most recent order
+
+          // Play sound
+          if (soundEnabled) {
+            playOrderSound();
+          }
+
+          // Show toast notification
+          toast.custom((t) => (
+            <div
+              className={`${t.visible ? 'animate-enter' : 'animate-leave'}`}
+              style={{
+                background: 'linear-gradient(135deg, #1B7E1B, #22C55E)',
+                color: '#FFFFFF',
+                borderRadius: 16,
+                padding: '14px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                boxShadow: '0 8px 32px rgba(34,197,94,0.4)',
+                maxWidth: 360,
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                toast.dismiss(t.id);
+                setActiveTab('orders');
+              }}
+            >
+              <span style={{ fontSize: 28 }}>🔔</span>
+              <div>
+                <p style={{ fontWeight: 800, fontSize: 14, margin: 0 }}>
+                  {diff} New Order{diff > 1 ? 's' : ''}!
+                </p>
+                <p style={{ fontSize: 12, opacity: 0.9, margin: '2px 0 0' }}>
+                  {newOrder?.user?.name || 'Customer'} — ₹{newOrder?.totalAmount || 0}
+                </p>
+              </div>
+            </div>
+          ), { duration: 5000, position: 'top-center' });
+        }
+      }
+
+      prevOrderCountRef.current = sorted.length;
+      isFirstLoadRef.current = false;
+      setOrders(sorted);
+    } catch (err) {
+      console.error('Poll error:', err.message);
+    } finally {
+      isPollingRef.current = false;
+    }
+  }, [soundEnabled, setActiveTab]);
 
   const loadProducts = async () => {
     try {
@@ -70,7 +188,6 @@ const AdminDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
-
   const loadStoreSettings = async () => {
     try {
       const { data } = await getStoreSettings();
@@ -78,22 +195,54 @@ const AdminDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
+  // ═══════════════════════════════════════════
+  // AUTO-POLLING (Only orders, every 30 seconds)
+  // ═══════════════════════════════════════════
+
+  // Initial load — all data once
+  useEffect(() => {
+    loadOrders();
+    loadProducts();
+    loadStoreSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Poll only orders every 30 seconds (lightweight, with mutex guard)
+  useEffect(() => {
+    const interval = setInterval(loadOrders, 30000);
+    return () => clearInterval(interval);
+  }, [loadOrders]);
+
+  // Save sound preference
+  useEffect(() => {
+    localStorage.setItem('sewashubham_sound_enabled', soundEnabled.toString());
+  }, [soundEnabled]);
+
+  // ═══════════════════════════════════════════
+  // ORDER HANDLERS
+  // ═══════════════════════════════════════════
 
   const handleUpdateStatus = async (id, status) => {
     try {
       await updateOrderStatus(id, status);
       loadOrders();
-      // Auto-switch to customers tab when order is delivered
+      toast.success(`Order ${status}`, { icon: status === 'Delivered' ? '✅' : '📦' });
       if (status === 'Delivered') {
         setActiveTab('customers');
       }
+    } catch (err) {
+      toast.error("Failed to update status");
     }
-    catch (err) { alert("Failed to update status"); }
   };
 
   const handleAcceptOrder = async (id) => {
-    try { await acceptOrder(id); loadOrders(); }
-    catch (err) { alert("Failed to accept order"); }
+    try {
+      await acceptOrder(id);
+      loadOrders();
+      toast.success("Order accepted!", { icon: '✅' });
+    } catch (err) {
+      toast.error("Failed to accept order");
+    }
   };
 
   const handleManualVerifyPayment = async (orderId) => {
@@ -101,39 +250,68 @@ const AdminDashboard = () => {
       try {
         await manualVerifyPayment(orderId, { verificationNote: "Admin manual verify" });
         loadOrders();
-      } catch (err) { alert("Verification failed"); }
+        toast.success("Payment verified!", { icon: '💳' });
+      } catch (err) {
+        toast.error("Verification failed");
+      }
     }
   };
 
-  // Product handlers
+  // ═══════════════════════════════════════════
+  // PRODUCT HANDLERS
+  // ═══════════════════════════════════════════
+
   const confirmToggleStock = async () => {
     if (showStockConfirm) {
       try {
         await toggleProductAvailability(showStockConfirm._id);
         loadProducts();
         setShowStockConfirm(null);
-      } catch (err) { alert("Failed to toggle stock"); }
+        toast.success(
+          showStockConfirm.isAvailable ? "Marked out of stock" : "Marked in stock",
+          { icon: showStockConfirm.isAvailable ? '🔴' : '🟢' }
+        );
+      } catch (err) {
+        toast.error("Failed to toggle stock");
+      }
     }
   };
 
   const handleDeleteProduct = async (id) => {
     if (window.confirm("Delete product?")) {
-      await deleteProduct(id);
-      loadProducts();
+      try {
+        await deleteProduct(id);
+        loadProducts();
+        toast.success("Product deleted", { icon: '🗑️' });
+      } catch (err) {
+        toast.error("Failed to delete product");
+      }
     }
   };
 
   const handleClearAll = async () => {
-    try { await deleteAllProducts(); loadProducts(); }
-    catch (err) { alert('Failed to clear menu'); }
+    try {
+      await deleteAllProducts();
+      loadProducts();
+      toast.success("All menu items cleared", { icon: '🗑️' });
+    } catch (err) {
+      toast.error('Failed to clear menu');
+    }
   };
 
-  // Settings
+  // ═══════════════════════════════════════════
+  // SETTINGS
+  // ═══════════════════════════════════════════
+
   const handleUpdateStore = async () => {
     const password = prompt("Enter settings password to save:");
     if (!password) return;
-    try { await updateStoreSettings({ ...storeSettings, password }); alert("Settings updated!"); }
-    catch (e) { alert(e.response?.data?.message || "Error updating settings"); }
+    try {
+      await updateStoreSettings({ ...storeSettings, password });
+      toast.success("Settings updated!", { icon: '⚙️' });
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Error updating settings");
+    }
   };
 
   const handleLogout = () => {
@@ -141,7 +319,23 @@ const AdminDashboard = () => {
     window.location.href = "/";
   };
 
-  // Stats
+  // ═══════════════════════════════════════════
+  // PIN LOCK
+  // ═══════════════════════════════════════════
+
+  const handlePinUnlock = (tabId) => {
+    setUnlockedTabs(prev => ({ ...prev, [tabId]: true }));
+    toast.success("Access granted!", { icon: '🔓' });
+  };
+
+  const isTabLocked = (tabId) => {
+    return (tabId === 'revenue' || tabId === 'settings') && !unlockedTabs[tabId];
+  };
+
+  // ═══════════════════════════════════════════
+  // STATS
+  // ═══════════════════════════════════════════
+
   const todayOrders = useMemo(() =>
     orders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString()),
     [orders]);
@@ -154,6 +348,27 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout}>
+
+      {/* Toast Container */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: '16px',
+            fontWeight: 600,
+            fontSize: '14px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          },
+          success: {
+            style: { background: '#F0FDF4', color: '#166534', border: '1.5px solid #BBF7D0' },
+          },
+          error: {
+            style: { background: '#FEF2F2', color: '#991B1B', border: '1.5px solid #FECACA' },
+          },
+        }}
+      />
+
       {/* Header */}
       <header className="sticky top-0 z-40 px-4 py-4"
         style={{ background: '#FFFFFF', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', borderBottomLeftRadius: '20px', borderBottomRightRadius: '20px' }}>
@@ -167,6 +382,37 @@ const AdminDashboard = () => {
               <h1 className="font-bold text-lg leading-tight" style={{ color: '#C97B4B' }}>Admin Panel</h1>
               <p className="text-xs" style={{ color: '#A0998F' }}>{admin?.name || 'Admin'}</p>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {showInstallPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 hidden md:flex"
+                style={{ background: 'linear-gradient(135deg, #1C1C1C, #3F3F3F)' }}
+              >
+                 📱 Install App
+              </button>
+            )}
+
+            {pendingOrders > 0 && (
+              <div className="px-3 py-1.5 rounded-full text-xs font-bold animate-pulse"
+                style={{ background: '#FEE2E2', color: '#DC2626', border: '1.5px solid #FECACA' }}>
+                🔴 {pendingOrders} Pending
+              </div>
+            )}
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: soundEnabled ? '#DCFCE7' : '#F5F5F5',
+                border: soundEnabled ? '1.5px solid #BBF7D0' : '1.5px solid #E8E3DB',
+              }}
+              title={soundEnabled ? 'Sound ON — click to mute' : 'Sound OFF — click to enable'}
+            >
+              {soundEnabled ? <FaBell size={16} color="#16A34A" /> : <FaBellSlash size={16} color="#A0998F" />}
+            </button>
           </div>
         </div>
       </header>
@@ -204,23 +450,32 @@ const AdminDashboard = () => {
         <AdminCustomers orders={orders} />
       )}
 
-
+      {/* Stats — PIN Protected */}
       {activeTab === 'revenue' && (
-        <AdminStats
-          todayOrders={todayOrders}
-          todayRevenue={todayRevenue}
-          pendingOrders={pendingOrders}
-          allOrders={orders}
-          products={products}
-        />
+        isTabLocked('revenue') ? (
+          <PinLock tabName="Stats" onUnlock={() => handlePinUnlock('revenue')} />
+        ) : (
+          <AdminStats
+            todayOrders={todayOrders}
+            todayRevenue={todayRevenue}
+            pendingOrders={pendingOrders}
+            allOrders={orders}
+            products={products}
+          />
+        )
       )}
 
+      {/* Settings — PIN Protected */}
       {activeTab === 'settings' && (
-        <AdminSettings
-          storeSettings={storeSettings}
-          setStoreSettings={setStoreSettings}
-          onUpdateStore={handleUpdateStore}
-        />
+        isTabLocked('settings') ? (
+          <PinLock tabName="Settings" onUnlock={() => handlePinUnlock('settings')} />
+        ) : (
+          <AdminSettings
+            storeSettings={storeSettings}
+            setStoreSettings={setStoreSettings}
+            onUpdateStore={handleUpdateStore}
+          />
+        )
       )}
 
       {/* Product Form Modal */}
@@ -228,10 +483,9 @@ const AdminDashboard = () => {
         <ProductFormModal
           product={editingProduct}
           onClose={() => { setShowProductForm(false); setEditingProduct(null); }}
-          onSave={() => { loadProducts(); setShowProductForm(false); setEditingProduct(null); }}
+          onSave={() => { loadProducts(); setShowProductForm(false); setEditingProduct(null); toast.success("Product saved!", { icon: '✅' }); }}
         />
       )}
-
 
       {/* Stock Toggle Confirmation */}
       {showStockConfirm && (

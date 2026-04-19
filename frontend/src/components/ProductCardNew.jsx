@@ -2,6 +2,7 @@ import React, { useState, useMemo, memo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaRegHeart, FaCheck } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { imagePresets } from '../services/imageOptimizer';
 
 const FAV_KEY = 'sewashubham_favorites';
 const getFavIds = () => { try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch { return []; } };
@@ -128,9 +129,10 @@ const ProductCardNew = memo(({ product, onAddSuccess, index = 0, featured = fals
             <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
                 {safeProduct.image ? (
                     <img
-                        src={safeProduct.image}
+                        src={imagePresets.thumbnail(safeProduct.image)}
                         alt={safeProduct.name}
                         loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                             e.target.style.display = 'none';

@@ -41,7 +41,7 @@ exports.getCategoryBySlug = async (req, res) => {
 // Create category (admin)
 exports.createCategory = async (req, res) => {
     try {
-        const { name, description, image, icon, colorFrom, colorTo, sortOrder, isActive, isQuickPick } = req.body;
+        const { name, description, image, icon, colorFrom, colorTo, sortOrder, isActive, isQuickPick, subcategories } = req.body;
         
         if (!name) return res.status(400).json({ message: 'Category name is required' });
 
@@ -52,7 +52,8 @@ exports.createCategory = async (req, res) => {
             name, description, image, icon,
             colorFrom, colorTo, sortOrder,
             isActive: isActive !== undefined ? isActive : true,
-            isQuickPick: isQuickPick || false
+            isQuickPick: isQuickPick || false,
+            subcategories: subcategories || []
         });
         await category.save();
         res.status(201).json(category);

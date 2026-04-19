@@ -1,0 +1,262 @@
+[
+  {
+    "id": "69a0304b88033547406646aa",
+    "name": "Yes"
+  },
+  {
+    "id": "69e3ac17dd0528cb1a6148c7",
+    "name": "Veg Momos"
+  },
+  {
+    "id": "69e3ac1bdd0528cb1a6148cb",
+    "name": "Veg Fries Momos"
+  },
+  {
+    "id": "69e3ac1ddd0528cb1a6148cf",
+    "name": "Paneer Steam Momos"
+  },
+  {
+    "id": "69e3ac21dd0528cb1a6148d3",
+    "name": "Paneer Fried Momos"
+  },
+  {
+    "id": "69e3ac22dd0528cb1a6148d7",
+    "name": "Veg Kurkure Momos"
+  },
+  {
+    "id": "69e3ac26dd0528cb1a6148db",
+    "name": "Tandoori Veg Fried Momos"
+  },
+  {
+    "id": "69e3ac2add0528cb1a6148df",
+    "name": "Paneer Kurkure Momos"
+  },
+  {
+    "id": "69e3ac2ddd0528cb1a6148e3",
+    "name": "Tandoori Paneer Fried Momos"
+  },
+  {
+    "id": "69e3ac30dd0528cb1a6148e7",
+    "name": "Veg Tandoori Momos"
+  },
+  {
+    "id": "69e3ac31dd0528cb1a6148eb",
+    "name": "Veg Afghani Momos"
+  },
+  {
+    "id": "69e3ac31dd0528cb1a6148ef",
+    "name": "Paneer Tandoori Momos"
+  },
+  {
+    "id": "69e3ac36dd0528cb1a6148f3",
+    "name": "Paneer Afghani Momos"
+  },
+  {
+    "id": "69e3ac3bdd0528cb1a6148f7",
+    "name": "Paneer Gravy Momos"
+  },
+  {
+    "id": "69e3ac3cdd0528cb1a6148fb",
+    "name": "Plain Masala Patties"
+  },
+  {
+    "id": "69e3ac41dd0528cb1a6148ff",
+    "name": "Masala Patties"
+  },
+  {
+    "id": "69e3ac47dd0528cb1a614903",
+    "name": "Paneer Patties"
+  },
+  {
+    "id": "69e3ac4bdd0528cb1a614907",
+    "name": "Tandoori Patties"
+  },
+  {
+    "id": "69e3ac4ddd0528cb1a61490b",
+    "name": "Cheese Patties"
+  },
+  {
+    "id": "69e3ac52dd0528cb1a61490f",
+    "name": "Cheese Tandoori Paneer Mayo"
+  },
+  {
+    "id": "69e3ac54dd0528cb1a614913",
+    "name": "Aloo Tikki Burger"
+  },
+  {
+    "id": "69e3ac56dd0528cb1a614917",
+    "name": "Veg Burger"
+  },
+  {
+    "id": "69e3ac62dd0528cb1a61491b",
+    "name": "Veg Paneer Burger"
+  },
+  {
+    "id": "69e3ac63dd0528cb1a61491f",
+    "name": "Veg Cheese Burger"
+  },
+  {
+    "id": "69e3ac64dd0528cb1a614923",
+    "name": "Tandoori Burger"
+  },
+  {
+    "id": "69e3ac68dd0528cb1a614927",
+    "name": "Schezwan Burger"
+  },
+  {
+    "id": "69e3ac6add0528cb1a61492b",
+    "name": "Makhani Burger"
+  },
+  {
+    "id": "69e3ac6add0528cb1a61492f",
+    "name": "Makhani Paneer Burger"
+  },
+  {
+    "id": "69e3ac6cdd0528cb1a614933",
+    "name": "Tandoori Paneer Burger"
+  },
+  {
+    "id": "69e3ac70dd0528cb1a614937",
+    "name": "Chilly Burger"
+  },
+  {
+    "id": "69e3ac71dd0528cb1a61493b",
+    "name": "Mexican Burger"
+  },
+  {
+    "id": "69e3ac73dd0528cb1a61493f",
+    "name": "SPB Special Burger"
+  },
+  {
+    "id": "69e3ac73dd0528cb1a614943",
+    "name": "Plain Maggie"
+  },
+  {
+    "id": "69e3ac74dd0528cb1a614947",
+    "name": "Veg Maggie"
+  },
+  {
+    "id": "69e3ac75dd0528cb1a61494b",
+    "name": "Paneer Maggie"
+  },
+  {
+    "id": "69e3ac79dd0528cb1a61494f",
+    "name": "Tandoori Maggie"
+  },
+  {
+    "id": "69e3ac7bdd0528cb1a614953",
+    "name": "Corn Cheese Maggie"
+  },
+  {
+    "id": "69e3ac7ddd0528cb1a614957",
+    "name": "Cheese and Butter Maggie"
+  },
+  {
+    "id": "69e3ac7fdd0528cb1a61495b",
+    "name": "Butter Maggie"
+  },
+  {
+    "id": "69e3ac80dd0528cb1a61495f",
+    "name": "Pizza Maggie"
+  },
+  {
+    "id": "69e3ac82dd0528cb1a614963",
+    "name": "Pizza Paneer Maggie"
+  },
+  {
+    "id": "69e3ac83dd0528cb1a614967",
+    "name": "Tandoori Paneer Maggie"
+  },
+  {
+    "id": "69e3ac83dd0528cb1a61496b",
+    "name": "Veg Sandwich"
+  },
+  {
+    "id": "69e3ac85dd0528cb1a61496f",
+    "name": "Paneer Sandwich"
+  },
+  {
+    "id": "69e3ac86dd0528cb1a614973",
+    "name": "Corn Mayo Sandwich"
+  },
+  {
+    "id": "69e3ac89dd0528cb1a614977",
+    "name": "Tandoori Sandwich"
+  },
+  {
+    "id": "69e3ac8add0528cb1a61497b",
+    "name": "Paneer Special Sandwich"
+  },
+  {
+    "id": "69e3ac8bdd0528cb1a61497f",
+    "name": "Sev Onion Sandwich"
+  },
+  {
+    "id": "69e3ac8bdd0528cb1a614983",
+    "name": "Tandoori Paneer Corn Sandwich"
+  },
+  {
+    "id": "69e3ac8cdd0528cb1a614987",
+    "name": "Pizza Sandwich"
+  },
+  {
+    "id": "69e3ac8cdd0528cb1a61498b",
+    "name": "Salt Fries"
+  },
+  {
+    "id": "69e3ac8ddd0528cb1a61498f",
+    "name": "Masala Fries"
+  },
+  {
+    "id": "69e3ac8ddd0528cb1a614993",
+    "name": "Peri Peri Fries"
+  },
+  {
+    "id": "69e3ac8edd0528cb1a614997",
+    "name": "Cheese Loaded Fries"
+  },
+  {
+    "id": "69e3ac8edd0528cb1a61499b",
+    "name": "Tandoori Fries"
+  },
+  {
+    "id": "69e3ac90dd0528cb1a61499f",
+    "name": "Veg Wrap"
+  },
+  {
+    "id": "69e3ac94dd0528cb1a6149a3",
+    "name": "Paneer Wrap"
+  },
+  {
+    "id": "69e3ac96dd0528cb1a6149a7",
+    "name": "SPB Wrap"
+  },
+  {
+    "id": "69e3ac99dd0528cb1a6149ab",
+    "name": "Red Sauce Pasta"
+  },
+  {
+    "id": "69e3ac9cdd0528cb1a6149af",
+    "name": "White Sauce Pasta"
+  },
+  {
+    "id": "69e3ac9cdd0528cb1a6149b3",
+    "name": "Pink Sauce Pasta"
+  },
+  {
+    "id": "69e3ac9ddd0528cb1a6149b7",
+    "name": "Chilly Paneer"
+  },
+  {
+    "id": "69e3aca1dd0528cb1a6149bb",
+    "name": "Honey Chili Potato"
+  },
+  {
+    "id": "69e3aca5dd0528cb1a6149bf",
+    "name": "Chili Garlic Noodles"
+  },
+  {
+    "id": "69e3aca6dd0528cb1a6149c3",
+    "name": "Veg Noodle"
+  }
+]

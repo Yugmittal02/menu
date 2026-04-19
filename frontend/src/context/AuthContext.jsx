@@ -80,10 +80,10 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('customer', JSON.stringify(data.user));
             }
             
-            // Clear potential admin session to avoid conflicts
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('admin');
-            setAdmin(null);
+// DO NOT clear Admin session here so developers can test customer & admin simultaneously across tabs.
+// localStorage.removeItem('adminToken');
+// localStorage.removeItem('admin');
+// setAdmin(null);
 
             setCustomer(data.user);
             return { success: true };

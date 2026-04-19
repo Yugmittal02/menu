@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { FaPlus, FaStar, FaCheck } from 'react-icons/fa';
+import { imagePresets } from '../services/imageOptimizer';
 
 const ProductCard = memo(({ product, onAddSuccess }) => {
     const { addToCart } = useCart();
@@ -56,7 +57,7 @@ const ProductCard = memo(({ product, onAddSuccess }) => {
                     {/* Image */}
                     <div 
                         className="w-28 h-28 bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl flex-shrink-0 bg-cover bg-center relative overflow-hidden"
-                        style={{ backgroundImage: safeProduct.image ? `url(${safeProduct.image})` : 'none' }}
+                        style={{ backgroundImage: safeProduct.image ? `url(${imagePresets.listItem(safeProduct.image)})` : 'none' }}
                     >
                         {!safeProduct.image && (
                             <div className="absolute inset-0 flex items-center justify-center text-5xl">🍽️</div>
