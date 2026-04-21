@@ -4,7 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const mongoSanitize = require("express-mongo-sanitize");
+// express-mongo-sanitize removed — manual sanitization used instead (Express 5 compat)
 const hpp = require("hpp");
 
 dotenv.config();
@@ -122,7 +122,25 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Data sanitization against NoSQL injection
-app.use(mongoSanitize());
+// Note: express-mongo-sanitize v2 is incompatible with Express 5
+// Using manual sanitization instead
+const sanitizeObject = (obj) => {
+  if (obj && typeof obj === "object") {
+    for (const key in obj) {
+      if (key.startsWith("$") || key.includes(".")) {
+        delete obj[key];
+      } else if (typeof obj[key] === "object") {
+        sanitizeObject(obj[key]);
+      }
+    }
+  }
+};
+app.use((req, res, next) => {
+  if (req.body) sanitizeObject(req.body);
+  if (req.query) sanitizeObject(req.query);
+  if (req.params) sanitizeObject(req.params);
+  next();
+});
 
 // Prevent parameter pollution
 app.use(hpp());
