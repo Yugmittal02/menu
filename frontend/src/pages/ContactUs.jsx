@@ -6,14 +6,20 @@ import Footer from '../components/Footer';
 
 const ContactUs = () => {
     const navigate = useNavigate();
-    const [adminPhone, setAdminPhone] = useState('9876543210');
+    const [settings, setSettings] = useState({
+        adminPhone: '9876543210',
+        email: 'contact@bakerydelight.com',
+        storeAddress: 'Bakery Delight, Main Market Road,\nNear City Center, Delhi - 110001',
+        workingHours: 'Monday - Sunday\n10:00 AM - 10:00 PM',
+        instagramLink: 'https://www.instagram.com/bakery_delight/'
+    });
 
     useEffect(() => {
         const loadSettings = async () => {
             try {
                 const { data } = await getStoreSettings();
-                if (data.adminPhone) {
-                    setAdminPhone(data.adminPhone);
+                if (data) {
+                    setSettings(prev => ({ ...prev, ...data }));
                 }
             } catch (error) {
                 console.error('Failed to load settings:', error);
@@ -26,8 +32,8 @@ const ContactUs = () => {
         {
             icon: FaPhoneAlt,
             label: 'Call Us',
-            value: adminPhone,
-            href: `tel:+91${adminPhone}`,
+            value: settings.adminPhone,
+            href: `tel:+91${settings.adminPhone}`,
             iconColor: '#6B4423',
             bgColor: '#FEF3E2',
         },
@@ -35,15 +41,15 @@ const ContactUs = () => {
             icon: FaWhatsapp,
             label: 'WhatsApp',
             value: 'Chat with us',
-            href: `https://wa.me/91${adminPhone}`,
+            href: `https://wa.me/91${settings.adminPhone}`,
             iconColor: '#22C55E',
             bgColor: '#DCFCE7',
         },
         {
             icon: FaEnvelope,
             label: 'Email',
-            value: 'contact@bakerydelight.com',
-            href: 'mailto:contact@bakerydelight.com',
+            value: settings.email,
+            href: `mailto:${settings.email}`,
             iconColor: '#C9A962',
             bgColor: '#FEF3E2',
         },
@@ -120,9 +126,8 @@ const ContactUs = () => {
                         </div>
                         <div>
                             <p className="font-bold" style={{ color: '#4A3728' }}>Our Location</p>
-                            <p className="text-sm mt-1" style={{ color: '#8B7355' }}>
-                                Bakery Delight, Main Market Road,<br />
-                                Near City Center, Delhi - 110001
+                            <p className="text-sm mt-1 whitespace-pre-line" style={{ color: '#8B7355' }}>
+                                {settings.storeAddress}
                             </p>
                         </div>
                     </div>
@@ -133,9 +138,8 @@ const ContactUs = () => {
                         </div>
                         <div>
                             <p className="font-bold" style={{ color: '#4A3728' }}>Working Hours</p>
-                            <p className="text-sm mt-1" style={{ color: '#8B7355' }}>
-                                Monday - Sunday<br />
-                                10:00 AM - 10:00 PM
+                            <p className="text-sm mt-1 whitespace-pre-line" style={{ color: '#8B7355' }}>
+                                {settings.workingHours}
                             </p>
                         </div>
                     </div>

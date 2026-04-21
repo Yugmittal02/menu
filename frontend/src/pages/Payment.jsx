@@ -641,7 +641,7 @@ const Payment = () => {
                   </div>
                   Delivery Fee
                 </span>
-                <span>₹30</span>
+                <span>{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}</span>
               </div>
             )}
             <div className="border-t-2 border-dashed border-[var(--border-light)] pt-4 mt-4">

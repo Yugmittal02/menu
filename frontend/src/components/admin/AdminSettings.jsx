@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaStore, FaToggleOn, FaToggleOff, FaLock, FaSave, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaStore, FaToggleOn, FaToggleOff, FaLock, FaSave, FaChevronDown, FaChevronUp, FaAddressCard } from 'react-icons/fa';
 import { getHomepageBadges, updateHomepageBadges } from '../../services/api';
 
 const AdminSettings = ({
@@ -83,6 +83,87 @@ const AdminSettings = ({
                     style={{ background: 'linear-gradient(135deg, #C97B4B 0%, #E8956A 100%)', boxShadow: '0 4px 12px rgba(201, 123, 75, 0.3)' }}
                 >
                     Save Settings
+                </button>
+            </div>
+
+            {/* Store Public Details */}
+            <div className="p-5 rounded-2xl"
+                style={{ background: '#FFFFFF', border: '2px solid #E8E3DB', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ background: '#FEF3E2', color: '#16A34A' }}>
+                        <FaAddressCard />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="font-bold" style={{ color: '#1C1C1C' }}>Store Public Details</h3>
+                        <p className="text-xs" style={{ color: '#A0998F' }}>Contact and location info displayed to users</p>
+                    </div>
+                </div>
+
+                <div className="space-y-4 mb-4">
+                    <div>
+                        <label className="block text-xs font-bold mb-1" style={{ color: '#1C1C1C' }}>Phone Number (WhatsApp & Calling)</label>
+                        <input 
+                            type="text" 
+                            className="w-full px-4 py-2.5 rounded-xl text-sm"
+                            style={{ background: '#FAF7F2', border: '1px solid #E8E3DB', outline: 'none' }}
+                            value={storeSettings.adminPhone || ''} 
+                            onChange={(e) => setStoreSettings({ ...storeSettings, adminPhone: e.target.value })}
+                            placeholder="e.g. 9876543210"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold mb-1" style={{ color: '#1C1C1C' }}>Email Address</label>
+                        <input 
+                            type="email" 
+                            className="w-full px-4 py-2.5 rounded-xl text-sm"
+                            style={{ background: '#FAF7F2', border: '1px solid #E8E3DB', outline: 'none' }}
+                            value={storeSettings.email || ''} 
+                            onChange={(e) => setStoreSettings({ ...storeSettings, email: e.target.value })}
+                            placeholder="e.g. contact@bakerydelight.com"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold mb-1" style={{ color: '#1C1C1C' }}>Store Address</label>
+                        <textarea 
+                            className="w-full px-4 py-2.5 rounded-xl text-sm resize-none"
+                            style={{ background: '#FAF7F2', border: '1px solid #E8E3DB', outline: 'none' }}
+                            rows="2"
+                            value={storeSettings.storeAddress || ''} 
+                            onChange={(e) => setStoreSettings({ ...storeSettings, storeAddress: e.target.value })}
+                            placeholder="Enter store address"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold mb-1" style={{ color: '#1C1C1C' }}>Working Hours</label>
+                        <textarea 
+                            className="w-full px-4 py-2.5 rounded-xl text-sm resize-none"
+                            style={{ background: '#FAF7F2', border: '1px solid #E8E3DB', outline: 'none' }}
+                            rows="2"
+                            value={storeSettings.workingHours || ''} 
+                            onChange={(e) => setStoreSettings({ ...storeSettings, workingHours: e.target.value })}
+                            placeholder="e.g. Monday - Sunday\n10:00 AM - 10:00 PM"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold mb-1" style={{ color: '#1C1C1C' }}>Instagram Link</label>
+                        <input 
+                            type="url" 
+                            className="w-full px-4 py-2.5 rounded-xl text-sm"
+                            style={{ background: '#FAF7F2', border: '1px solid #E8E3DB', outline: 'none' }}
+                            value={storeSettings.instagramLink || ''} 
+                            onChange={(e) => setStoreSettings({ ...storeSettings, instagramLink: e.target.value })}
+                            placeholder="https://instagram.com/..."
+                        />
+                    </div>
+                </div>
+                
+                <button
+                    onClick={onUpdateStore}
+                    className="w-full py-3 text-white font-bold rounded-xl active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)', boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)' }}
+                >
+                    Save Details
                 </button>
             </div>
 

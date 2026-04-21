@@ -59,6 +59,46 @@ exports.createPaymentOrder = async (req, res) => {
       return res.status(400).json({ message: "No items provided for order" });
     }
 
+    // Server-side price verification — prevent amount tampering
+    const Product = require("../models/Product");
+    let calculatedItemsTotal = 0;
+    for (const item of items) {
+      const productId = item._id || item.product;
+      if (productId) {
+        const product = await Product.findById(productId);
+        if (product) {
+          // Use size-specific price if a size was selected, otherwise base price
+          let unitPrice = product.basePrice;
+          if (item.size && product.sizes && product.sizes.length > 0) {
+            const sizeMatch = product.sizes.find((s) => s.name === item.size);
+            if (sizeMatch && sizeMatch.price) {
+              unitPrice = sizeMatch.price;
+            }
+          }
+          // Add addon prices
+          if (item.selectedAddons && product.addons) {
+            for (const addonName of item.selectedAddons) {
+              const addon = product.addons.find((a) => a.name === addonName);
+              if (addon && addon.price) {
+                unitPrice += addon.price;
+              }
+            }
+          }
+          calculatedItemsTotal += unitPrice * (item.quantity || 1);
+        }
+      }
+    }
+
+    // Allow tolerance for delivery fees, discounts, donations, and rounding (up to ₹200 difference)
+    if (calculatedItemsTotal > 0 && Math.abs(calculatedItemsTotal - amount) > 200) {
+      console.error(
+        `Price mismatch! Calculated: ₹${calculatedItemsTotal}, Submitted: ₹${amount}`,
+      );
+      return res.status(400).json({
+        message: "Price verification failed. Please refresh and try again.",
+      });
+    }
+
     // Create order in our database first with pending payment status
     const orderData = {
       user: userId,
@@ -355,6 +395,7 @@ async function handlePaymentCaptured(payload) {
       razorpayPaymentId: payment.id,
       paymentStatus: "Paid",
       paymentVerifiedAt: new Date(),
+      status: "Pending", // Ensure order enters admin workflow
     },
   );
 
@@ -386,6 +427,7 @@ async function handleOrderPaid(payload) {
     {
       paymentStatus: "Paid",
       paymentVerifiedAt: new Date(),
+      status: "Pending", // Ensure order enters admin workflow
     },
   );
 

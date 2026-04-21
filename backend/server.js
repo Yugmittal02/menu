@@ -31,8 +31,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 const defaultAllowedOrigins = [
   "https://sewashubhambakery.com",
   "https://www.sewashubhambakery.com",
-  "http://localhost:5173",
-  "http://localhost:3000",
+  // Only allow localhost in development
+  ...(isProduction ? [] : ["http://localhost:5173", "http://localhost:3000"]),
 ];
 
 // Merge both lists
@@ -84,18 +84,19 @@ app.use(
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "blob:"],
-            scriptSrc: ["'self'"],
-            connectSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://checkout.razorpay.com"],
+            connectSrc: ["'self'", "https://api.razorpay.com", "https://lumberjack.razorpay.com"],
+            frameSrc: ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"],
           },
         }
       : false,
   }),
 );
 
-// Rate limiting
+// Rate limiting — strict in production, relaxed in development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 99999, // Artificially high to prevent 429 errors during testing
+  max: isProduction ? 100 : 99999,
   message: { message: "Too many requests, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -105,7 +106,7 @@ app.use("/api", limiter);
 // Stricter rate limit for auth routes
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 100, // Increased for testing
+  max: isProduction ? 15 : 100, // 15 login attempts per hour in production
   message: {
     message: "Too many login attempts, please try again after an hour.",
   },
@@ -121,7 +122,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Data sanitization against NoSQL injection
-// app.use(mongoSanitize());
+app.use(mongoSanitize());
 
 // Prevent parameter pollution
 app.use(hpp());
@@ -149,6 +150,10 @@ mongoose
       console.log(
         `✅ Razorpay Configured: ${process.env.RAZORPAY_KEY_ID.substring(0, 8)}...`,
       );
+      // Warn if test keys are used in production
+      if (isProduction && process.env.RAZORPAY_KEY_ID.startsWith("rzp_test_")) {
+        console.error("⚠️  WARNING: Razorpay is in TEST MODE in PRODUCTION! Switch to live keys before accepting real payments.");
+      }
     } else {
       console.error("❌ Razorpay Configuration MISSING");
     }
@@ -238,7 +243,18 @@ app.use((err, req, res, next) => {
 // SERVER START
 // ===================
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+});
+
+// Graceful shutdown — close in-flight requests and DB connection
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received. Shutting down gracefully...");
+  server.close(() => {
+    mongoose.connection.close(false, () => {
+      console.log("MongoDB connection closed.");
+      process.exit(0);
+    });
+  });
 });

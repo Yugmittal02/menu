@@ -19,6 +19,10 @@ const getOrCreateSettings = async (key = 'upi_config') => {
             upiId: key === 'upi_config' ? '' : undefined,
             merchantName: key === 'upi_config' ? 'Store' : undefined,
             adminPhone: key === 'store_config' ? '9876543210' : undefined,
+            storeAddress: key === 'store_config' ? 'Bakery Delight, Main Market Road,\nNear City Center, Delhi - 110001' : undefined,
+            email: key === 'store_config' ? 'contact@bakerydelight.com' : undefined,
+            instagramLink: key === 'store_config' ? 'https://www.instagram.com/bakery_delight/' : undefined,
+            workingHours: key === 'store_config' ? 'Monday - Sunday\n10:00 AM - 10:00 PM' : undefined,
             settingsPassword,
             updatedBy: 'system'
         });
@@ -152,6 +156,10 @@ router.get('/store', async (req, res) => {
         res.json({
             isOpen: settings.isOpen !== undefined ? settings.isOpen : true,
             adminPhone: settings.adminPhone || '',
+            storeAddress: settings.storeAddress || '',
+            email: settings.email || '',
+            instagramLink: settings.instagramLink || '',
+            workingHours: settings.workingHours || '',
             updatedAt: settings.updatedAt
         });
     } catch (error) {
@@ -163,7 +171,7 @@ router.get('/store', async (req, res) => {
 // PUT /api/settings/store - Update Store config (requires password)
 router.put('/store', async (req, res) => {
     try {
-        const { adminPhone, isOpen, password, newPassword } = req.body;
+        const { adminPhone, storeAddress, email, instagramLink, workingHours, isOpen, password, newPassword } = req.body;
         
         if (!password) {
             return res.status(400).json({ message: 'Settings password is required' });
@@ -181,6 +189,10 @@ router.put('/store', async (req, res) => {
 
         // Update settings
         if (adminPhone !== undefined) settings.adminPhone = adminPhone.trim();
+        if (storeAddress !== undefined) settings.storeAddress = storeAddress.trim();
+        if (email !== undefined) settings.email = email.trim();
+        if (instagramLink !== undefined) settings.instagramLink = instagramLink.trim();
+        if (workingHours !== undefined) settings.workingHours = workingHours.trim();
         if (isOpen !== undefined) settings.isOpen = isOpen;
         settings.updatedAt = new Date();
         settings.updatedBy = 'admin';
@@ -196,6 +208,10 @@ router.put('/store', async (req, res) => {
         res.json({
             message: 'Store settings updated successfully',
             adminPhone: settings.adminPhone,
+            storeAddress: settings.storeAddress,
+            email: settings.email,
+            instagramLink: settings.instagramLink,
+            workingHours: settings.workingHours,
             isOpen: settings.isOpen
         });
     } catch (error) {

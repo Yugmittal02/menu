@@ -81,7 +81,7 @@ exports.getAllOrders = async (req, res) => {
         { paymentMethod: { $ne: "Razorpay" } },
         {
           paymentMethod: "Razorpay",
-          paymentStatus: { $in: ["Paid", "Failed", "Refunded"] },
+          paymentStatus: { $in: ["Paid", "Failed", "Refunded", "Initiated"] },
         },
       ],
     })

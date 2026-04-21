@@ -3,8 +3,10 @@ import { FaClipboardList, FaRupeeSign, FaClock, FaChartLine, FaShoppingCart, FaF
 
 const AdminStats = ({ todayOrders, todayRevenue, pendingOrders, allOrders = [], products = [] }) => {
     const totalOrders = allOrders.length;
-    const totalRevenue = useMemo(() => allOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0), [allOrders]);
-    const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(0) : 0;
+    // Revenue: only count non-cancelled orders with valid payment
+    const validOrders = useMemo(() => allOrders.filter(o => o.status !== 'Cancelled' && o.paymentStatus !== 'Failed'), [allOrders]);
+    const totalRevenue = useMemo(() => validOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0), [validOrders]);
+    const avgOrderValue = validOrders.length > 0 ? (totalRevenue / validOrders.length).toFixed(0) : 0;
 
     const deliveredOrders = allOrders.filter(o => o.status === 'Delivered').length;
     const cancelledOrders = allOrders.filter(o => o.status === 'Cancelled').length;
@@ -14,7 +16,7 @@ const AdminStats = ({ todayOrders, todayRevenue, pendingOrders, allOrders = [], 
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         return allOrders.filter(o => new Date(o.createdAt) >= weekAgo);
     }, [allOrders]);
-    const weeklyRevenue = weeklyOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const weeklyRevenue = weeklyOrders.filter(o => o.status !== 'Cancelled' && o.paymentStatus !== 'Failed').reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
     const categoryBreakdown = useMemo(() => {
         const cats = {};

@@ -1,7 +1,13 @@
 import axios from "axios";
 
+// Use localhost in development, production URL otherwise
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE_URL = isLocalhost
+  ? "http://localhost:5000/api"
+  : "https://api.sewashubhambakery.com/api";
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
 });
 
 // Interceptor to add admin token to requests

@@ -72,4 +72,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
+// Index for fast customer login (phone + role queries)
+userSchema.index({ phone: 1, role: 1 });
+
 module.exports = mongoose.model('User', userSchema);

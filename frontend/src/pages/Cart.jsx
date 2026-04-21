@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -6,7 +6,7 @@ import { getFeeSettings } from '../services/api';
 import { imagePresets } from '../services/imageOptimizer';
 import {
   FaArrowLeft, FaTruck, FaUtensils, FaMinus, FaPlus, FaTrash, FaMapMarkerAlt,
-  FaEdit, FaShoppingBag, FaClock, FaShieldAlt
+  FaShoppingBag, FaClock, FaShieldAlt
 } from 'react-icons/fa';
 
 const Cart = () => {
@@ -14,7 +14,8 @@ const Cart = () => {
   const { cart, removeFromCart, updateQuantity, total, clearCart } = useCart();
   const { customer } = useAuth();
   const [orderType, setOrderType] = useState('Delivery');
-  const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+  const [manualAddress, setManualAddress] = useState('');
+  const [landmark, setLandmark] = useState('');
   const [feeSettings, setFeeSettings] = useState({ deliveryFeeBase: 30, freeDeliveryThreshold: 500 });
 
   useEffect(() => {
@@ -22,9 +23,6 @@ const Cart = () => {
       if (res.data) setFeeSettings(res.data);
     }).catch(() => { });
   }, []);
-
-  const addresses = useMemo(() => customer?.addresses || [], [customer]);
-  const selectedAddress = addresses[selectedAddressIndex];
 
   const deliveryFee = orderType === 'Delivery'
     ? (total >= (feeSettings.freeDeliveryThreshold || 299) ? 0 : (feeSettings.deliveryFeeBase || 30))
@@ -36,16 +34,26 @@ const Cart = () => {
 
     // Check if user is logged in
     if (!customer) {
-      // Redirect to login with return path to cart
       navigate('/login', { state: { from: '/cart' } });
       return;
     }
 
-    // Navigate to payment page - address can be collected there if needed
+    // Validate delivery address for delivery orders
+    if (orderType === 'Delivery' && !manualAddress.trim()) {
+      alert('Please enter your delivery address');
+      return;
+    }
+
+    // Build delivery address from inline input
+    const deliveryAddress = orderType === 'Delivery' ? {
+      manualAddress: manualAddress.trim(),
+      landmark: landmark.trim() || undefined,
+    } : null;
+
     navigate('/payment', {
       state: {
         orderType,
-        deliveryAddress: orderType === 'Delivery' ? selectedAddress : null,
+        deliveryAddress,
         subtotal: Number(total) || 0,
         deliveryFee: Number(deliveryFee) || 0,
         grandTotal: Number(grandTotal) || 0
@@ -132,29 +140,30 @@ const Cart = () => {
       {orderType === 'Delivery' && (
         <div className="mx-4 mt-4 p-4 rounded-2xl"
           style={{ background: 'white', border: '2px solid #E8E3DB', boxShadow: '0 4px 16px rgba(28, 28, 28, 0.06)' }}>
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(252, 128, 25, 0.1)' }}>
-                <FaMapMarkerAlt size={14} color="#C97B4B" />
-              </div>
-              <span className="font-bold" style={{ color: '#1C1C1C' }}>Deliver To</span>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(252, 128, 25, 0.1)' }}>
+              <FaMapMarkerAlt size={14} color="#C97B4B" />
             </div>
-            <button
-              onClick={() => navigate('/address/add')}
-              className="flex items-center gap-1 text-sm font-semibold" style={{ color: '#C97B4B' }}
-            >
-              <FaEdit size={12} />
-              {addresses.length > 0 ? 'Change' : 'Add'}
-            </button>
+            <span className="font-bold" style={{ color: '#1C1C1C' }}>Deliver To</span>
           </div>
-          {selectedAddress ? (
-            <div className="p-3 rounded-xl" style={{ background: '#FAF7F2', border: '1px solid #E8E3DB' }}>
-              <p className="font-semibold text-sm" style={{ color: '#1C1C1C' }}>{selectedAddress.label || 'Home'}</p>
-              <p className="text-sm mt-1" style={{ color: '#7E7E7E' }}>{selectedAddress.fullAddress}</p>
-            </div>
-          ) : (
-            <p className="text-sm" style={{ color: '#7E7E7E' }}>Please add a delivery address</p>
-          )}
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={manualAddress}
+              onChange={(e) => setManualAddress(e.target.value)}
+              placeholder="Enter your full delivery address"
+              className="w-full p-3 rounded-xl text-sm border-2 focus:outline-none focus:ring-2 focus:ring-[#C97B4B]/30 transition-all"
+              style={{ background: '#FAF7F2', border: '2px solid #E8E3DB', color: '#1C1C1C' }}
+            />
+            <input
+              type="text"
+              value={landmark}
+              onChange={(e) => setLandmark(e.target.value)}
+              placeholder="Landmark (optional)"
+              className="w-full p-3 rounded-xl text-sm border-2 focus:outline-none focus:ring-2 focus:ring-[#C97B4B]/30 transition-all"
+              style={{ background: '#FAF7F2', border: '2px solid #E8E3DB', color: '#1C1C1C' }}
+            />
+          </div>
         </div>
       )}
 

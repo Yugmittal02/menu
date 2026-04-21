@@ -39,10 +39,17 @@ const OrderSuccess = () => {
   const razorpayPaymentId = searchParams.get("razorpay_payment_id");
   const razorpaySignature = searchParams.get("razorpay_signature");
 
-  // Use orderId from state or URL params
-  const orderId = state?.orderId || urlOrderId;
+  // Use orderId from state, URL params, or sessionStorage fallback (for page refresh)
+  const orderId = state?.orderId || urlOrderId || sessionStorage.getItem("current_order_id");
 
-  // Redirect if no orderId from either source
+  // Persist orderId to sessionStorage for refresh resilience
+  useEffect(() => {
+    if (orderId) {
+      sessionStorage.setItem("current_order_id", orderId);
+    }
+  }, [orderId]);
+
+  // Redirect if no orderId from any source
   useEffect(() => {
     if (!orderId) {
       navigate("/");
@@ -67,10 +74,15 @@ const OrderSuccess = () => {
             orderId: urlOrderId,
           });
           console.log("Payment verified successfully");
-          // Clear URL params after verification
+          // Persist orderId before clearing URL params
+          sessionStorage.setItem("current_order_id", urlOrderId);
+          // Clear URL params after successful verification
           window.history.replaceState({}, "", `/order-success`);
         } catch (error) {
           console.error("Payment verification from redirect failed:", error);
+          // Still persist orderId even if verification fails — webhook will handle it
+          sessionStorage.setItem("current_order_id", urlOrderId);
+          window.history.replaceState({}, "", `/order-success`);
         }
       }
     };

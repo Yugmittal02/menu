@@ -1,9 +1,31 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPhoneAlt, FaEnvelope, FaInstagram, FaWhatsapp, FaHeart, FaMapMarkerAlt } from 'react-icons/fa';
+import { getStoreSettings } from '../services/api';
 
 const Footer = memo(() => {
     const currentYear = useMemo(() => new Date().getFullYear(), []);
+    
+    const [settings, setSettings] = useState({
+        adminPhone: '9876543210',
+        email: 'contact@bakerydelight.com',
+        storeAddress: 'Bharatpur, Rajasthan',
+        instagramLink: 'https://www.instagram.com/bakery_delight/'
+    });
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const { data } = await getStoreSettings();
+                if (data) {
+                    setSettings(prev => ({ ...prev, ...data }));
+                }
+            } catch (error) {
+                console.error('Failed to load store settings for footer:', error);
+            }
+        };
+        loadSettings();
+    }, []);
 
     return (
         <footer className="bakery-footer">
@@ -18,8 +40,8 @@ const Footer = memo(() => {
 
             {/* Address */}
             <div className="flex items-center justify-center gap-2 mb-6 text-white/80">
-                <FaMapMarkerAlt size={14} />
-                <span className="text-sm">Bharatpur, Rajasthan</span>
+                <FaMapMarkerAlt size={14} className="flex-shrink-0" />
+                <span className="text-sm whitespace-pre-line text-center">{settings.storeAddress}</span>
             </div>
 
             {/* Links */}
@@ -33,16 +55,16 @@ const Footer = memo(() => {
 
             {/* Social */}
             <div className="footer-social">
-                <a href="https://wa.me/919694034523" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                <a href={`https://wa.me/91${settings.adminPhone}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
                     <FaWhatsapp size={22} />
                 </a>
-                <a href="https://www.instagram.com/bakery_delight/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <a href={settings.instagramLink} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                     <FaInstagram size={22} />
                 </a>
-                <a href="tel:+919694034523" aria-label="Phone">
+                <a href={`tel:+91${settings.adminPhone}`} aria-label="Phone">
                     <FaPhoneAlt size={19} />
                 </a>
-                <a href="mailto:hello@bakerydelight.com" aria-label="Email">
+                <a href={`mailto:${settings.email}`} aria-label="Email">
                     <FaEnvelope size={19} />
                 </a>
             </div>

@@ -8,7 +8,9 @@ import {
     FaExternalLinkAlt,
     FaClipboardList,
     FaPhoneAlt,
-    FaTimesCircle
+    FaTimesCircle,
+    FaCreditCard,
+    FaBan
 } from 'react-icons/fa';
 
 const AdminOrders = ({
@@ -24,6 +26,7 @@ const AdminOrders = ({
         Preparing: { icon: FaSpinner, color: '#3B82F6', bg: '#DBEAFE', label: "Preparing" },
         Ready: { icon: FaCheckCircle, color: '#16A34A', bg: '#DCFCE7', label: "Ready" },
         Delivered: { icon: FaTruck, color: '#7E7E7E', bg: '#F3F4F6', label: "Delivered" },
+        Cancelled: { icon: FaBan, color: '#DC2626', bg: '#FEE2E2', label: "Cancelled" },
     };
 
     const getUrgencyLevel = (createdAt, status, isAccepted) => {
@@ -144,12 +147,22 @@ const AdminOrders = ({
                                     <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold mt-1"
                                         style={order.paymentStatus === 'Paid'
                                             ? { background: '#DCFCE7', color: '#16A34A' }
-                                            : order.paymentMethod === 'Cash'
-                                                ? { background: '#FAF7F2', color: '#7E7E7E' }
-                                                : { background: '#FEE2E2', color: '#DC2626' }
+                                            : order.paymentStatus === 'Initiated'
+                                                ? { background: '#FEF9C3', color: '#A16207' }
+                                                : order.paymentMethod === 'Cash'
+                                                    ? { background: '#FAF7F2', color: '#7E7E7E' }
+                                                    : { background: '#FEE2E2', color: '#DC2626' }
                                         }>
-                                        {order.paymentStatus === 'Paid' ? 'PAID' : order.paymentMethod === 'Cash' ? 'CASH' : 'UNPAID'}
+                                        {order.paymentStatus === 'Paid' ? '✅ PAID' : order.paymentStatus === 'Initiated' ? '⏳ INITIATED' : order.paymentMethod === 'Cash' ? 'CASH' : 'UNPAID'}
                                     </div>
+                                    {/* Razorpay Payment ID for verified transactions */}
+                                    {order.razorpayPaymentId && (
+                                        <p className="text-[9px] mt-1 font-mono" style={{ color: '#A0998F' }}
+                                            title={order.razorpayPaymentId}>
+                                            <FaCreditCard size={8} className="inline mr-1" />
+                                            {order.razorpayPaymentId.slice(0, 18)}...
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -211,9 +224,25 @@ const AdminOrders = ({
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="w-full py-3 font-bold rounded-xl text-center text-sm flex items-center justify-center gap-2"
-                                            style={{ background: '#FEF9C3', color: '#A16207', border: '2px solid #FDE68A' }}>
-                                            <FaSpinner className="animate-spin" /> Waiting Payment...
+                                        <div className="space-y-2">
+                                            <div className="w-full py-3 font-bold rounded-xl text-center text-sm flex items-center justify-center gap-2"
+                                                style={{ background: '#FEF9C3', color: '#A16207', border: '2px solid #FDE68A' }}>
+                                                <FaSpinner className="animate-spin" /> Awaiting Online Payment...
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => onManualVerifyPayment(order._id)}
+                                                    className="flex-1 py-2.5 font-bold rounded-xl active:scale-[0.98] flex items-center justify-center gap-1.5 text-xs"
+                                                    style={{ background: '#DCFCE7', color: '#16A34A', border: '1.5px solid #BBF7D0' }}>
+                                                    <FaCheckCircle size={11} /> Verify Payment
+                                                </button>
+                                                <button
+                                                    onClick={() => onUpdateStatus(order._id, 'Cancelled')}
+                                                    className="flex-1 py-2.5 font-bold rounded-xl active:scale-[0.98] flex items-center justify-center gap-1.5 text-xs"
+                                                    style={{ background: '#FEE2E2', color: '#DC2626', border: '1.5px solid #FECACA' }}>
+                                                    <FaTimesCircle size={11} /> Reject Order
+                                                </button>
+                                            </div>
                                         </div>
                                     )
                                 )}

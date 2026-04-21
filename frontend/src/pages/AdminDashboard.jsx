@@ -341,7 +341,7 @@ const AdminDashboard = () => {
     [orders]);
 
   const todayRevenue = useMemo(() =>
-    todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0),
+    todayOrders.filter(o => o.status !== 'Cancelled' && o.paymentStatus !== 'Failed').reduce((sum, o) => sum + (o.totalAmount || 0), 0),
     [todayOrders]);
 
   const pendingOrders = orders.filter(o => o.status === 'Pending').length;

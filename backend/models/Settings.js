@@ -22,6 +22,22 @@ const SettingsSchema = new mongoose.Schema({
         type: String,
         default: '9876543210'
     },
+    storeAddress: {
+        type: String,
+        default: 'Bakery Delight, Main Market Road,\nNear City Center, Delhi - 110001'
+    },
+    email: {
+        type: String,
+        default: 'contact@bakerydelight.com'
+    },
+    instagramLink: {
+        type: String,
+        default: 'https://www.instagram.com/bakery_delight/'
+    },
+    workingHours: {
+        type: String,
+        default: 'Monday - Sunday\n10:00 AM - 10:00 PM'
+    },
     isOpen: {
         type: Boolean,
         default: true

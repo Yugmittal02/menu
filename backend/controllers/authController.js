@@ -30,7 +30,9 @@ exports.registerCustomer = async (req, res) => {
                 process.env.JWT_SECRET, 
                 { expiresIn: '365d' }
             );
-            return res.json({ token, user, message: 'Welcome back!' });
+            // Return only safe user fields (never expose password hash, activity, cart)
+            const safeUser = { _id: user._id, name: user.name, phone: user.phone, role: user.role, addresses: user.addresses };
+            return res.json({ token, user: safeUser, message: 'Welcome back!' });
         }
 
         // New customer
@@ -49,7 +51,9 @@ exports.registerCustomer = async (req, res) => {
             { expiresIn: '365d' }
         );
         
-        res.status(201).json({ token, user, message: 'Welcome!' });
+        // Return only safe user fields (never expose password hash, activity, cart)
+        const safeUser = { _id: user._id, name: user.name, phone: user.phone, role: user.role, addresses: user.addresses };
+        res.status(201).json({ token, user: safeUser, message: 'Welcome!' });
     } catch (error) {
         console.error('registerCustomer error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
