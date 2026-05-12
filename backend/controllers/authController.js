@@ -55,6 +55,24 @@ exports.registerCustomer = async (req, res) => {
         const safeUser = { _id: user._id, name: user.name, phone: user.phone, role: user.role, addresses: user.addresses };
         res.status(201).json({ token, user: safeUser, message: 'Welcome!' });
     } catch (error) {
+        // Handle duplicate key error on phone (stale unique index)
+        if (error.code === 11000 && error.keyPattern?.phone) {
+            // Try to find and login existing user instead
+            try {
+                const existingUser = await User.findOne({ phone: req.body.phone });
+                if (existingUser) {
+                    const token = jwt.sign(
+                        { userId: existingUser._id, role: existingUser.role },
+                        process.env.JWT_SECRET,
+                        { expiresIn: '365d' }
+                    );
+                    const safeUser = { _id: existingUser._id, name: existingUser.name, phone: existingUser.phone, role: existingUser.role, addresses: existingUser.addresses };
+                    return res.json({ token, user: safeUser, message: 'Welcome back!' });
+                }
+            } catch (innerError) {
+                console.error('Fallback login error:', innerError);
+            }
+        }
         console.error('registerCustomer error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
