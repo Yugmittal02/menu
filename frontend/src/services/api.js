@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: "/api" });
+const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || "/api" });
 
 // Token interceptor — cafe-owner /cafes/me routes must use cafeToken, not superAdminToken
 API.interceptors.request.use((req) => {
