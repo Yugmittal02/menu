@@ -24,6 +24,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   : [];
 
 const defaultAllowedOrigins = [
+  "https://orderly.menu.krixov.com",
+  "https://sewashubhambakery.com",
+  "https://www.sewashubhambakery.com",
   ...(isProduction ? [] : ["http://localhost:5173", "http://localhost:3000"]),
 ];
 
