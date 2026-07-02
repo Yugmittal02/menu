@@ -131,10 +131,11 @@ exports.getCafeOrders = async (req, res) => {
 // Valid food status transitions
 const VALID_TRANSITIONS = {
   pending: ['confirmed', 'cancelled'],
-  confirmed: ['preparing', 'cancelled'],
+  confirmed: ['preparing', 'completed', 'cancelled'],
   preparing: ['ready'],
-  ready: ['served'],
+  ready: ['served', 'completed'],
   served: [],
+  completed: [],
   cancelled: []
 };
 
@@ -142,7 +143,7 @@ const VALID_TRANSITIONS = {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'served', 'cancelled'];
+    const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) return res.status(400).json({ message: 'Invalid status' });
 
     const order = await TableOrder.findOne({ _id: req.params.id, cafe: req.user.cafeId });
@@ -202,7 +203,7 @@ exports.getCafeStats = async (req, res) => {
     const totalDiscount = paidOrders.reduce((sum, o) => sum + (o.discount || 0), 0);
     const pendingOrders = activeOrders.filter(o => o.status === 'pending').length;
     const preparingOrders = activeOrders.filter(o => o.status === 'preparing' || o.status === 'confirmed').length;
-    const completedOrders = activeOrders.filter(o => o.status === 'served').length;
+    const completedOrders = activeOrders.filter(o => o.status === 'served' || o.status === 'completed').length;
     const unpaidOrders = activeOrders.filter(o => o.paymentStatus !== 'paid').length;
 
     res.json({

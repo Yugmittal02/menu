@@ -3,13 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { trackOrder } from '../services/api';
 import { FiCheck, FiClock, FiArrowLeft, FiShoppingBag, FiHome } from 'react-icons/fi';
 
-const STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'served'];
+const STATUSES = ['pending', 'confirmed', 'completed'];
 const STATUS_INFO = {
   pending: { emoji: '⏳', label: 'Order Placed', desc: 'Waiting for cafe to confirm', color: '#F59E0B' },
   confirmed: { emoji: '✅', label: 'Confirmed', desc: 'Cafe accepted your order', color: '#3B82F6' },
-  preparing: { emoji: '🍳', label: 'Preparing', desc: 'Your food is being prepared', color: '#7C3AED' },
-  ready: { emoji: '🔔', label: 'Ready!', desc: 'Your order is ready for pickup', color: '#10B981' },
-  served: { emoji: '🍽️', label: 'Served', desc: 'Enjoy your meal!', color: '#10B981' },
+  completed: { emoji: '🎉', label: 'Completed', desc: 'Your order is complete!', color: '#10B981' },
   cancelled: { emoji: '❌', label: 'Cancelled', desc: 'Order was cancelled', color: '#F43F5E' }
 };
 
@@ -51,8 +49,10 @@ const OrderTrack = () => {
   );
 
   const info = STATUS_INFO[order.status] || STATUS_INFO.pending;
-  const currentIndex = order.status === 'cancelled' ? -1 : STATUSES.indexOf(order.status);
-  const progressPercent = order.status === 'cancelled' ? 0 : ((currentIndex + 1) / STATUSES.length) * 100;
+  // If old order has deprecated status, map it visually for progress
+  const normalizedStatus = ['preparing', 'ready'].includes(order.status) ? 'confirmed' : order.status === 'served' ? 'completed' : order.status;
+  const currentIndex = normalizedStatus === 'cancelled' ? -1 : STATUSES.indexOf(normalizedStatus);
+  const progressPercent = normalizedStatus === 'cancelled' ? 0 : ((currentIndex + 1) / STATUSES.length) * 100;
 
   // Build back-to-menu URL from order data
   const menuUrl = order.cafeId ? `/cafe/${order.cafeId}/table/${order.tableNumber}` : null;
@@ -69,7 +69,7 @@ const OrderTrack = () => {
           <div className="w-full h-2 rounded-full overflow-hidden mx-auto max-w-xs" style={{background:'rgba(255,255,255,0.06)'}}>
             <div className="h-full rounded-full transition-all duration-1000" style={{width:`${progressPercent}%`, background:`linear-gradient(90deg,#7C3AED,${info.color})`}} />
           </div>
-          <p className="text-[10px] mt-2" style={{color:'#565970'}}>{order.status === 'served' ? 'Completed' : `Step ${currentIndex+1} of ${STATUSES.length}`}</p>
+          <p className="text-[10px] mt-2" style={{color:'#565970'}}>{normalizedStatus === 'completed' ? 'Completed' : `Step ${currentIndex+1} of ${STATUSES.length}`}</p>
         </div>
 
         {/* Order Info */}
@@ -85,7 +85,7 @@ const OrderTrack = () => {
         </div>
 
         {/* Progress Steps */}
-        {order.status !== 'cancelled' && (
+        {normalizedStatus !== 'cancelled' && (
           <div className="glass-card p-5 mb-4">
             <div className="space-y-4">
               {STATUSES.map((s, i) => {

@@ -20,7 +20,7 @@ const tableOrderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'preparing', 'ready', 'served', 'cancelled'],
+    enum: ['pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'cancelled'],
     default: 'pending'
   },
   // PAYMENT TRACKING — revenue only counted when payment is received

@@ -150,50 +150,61 @@ const CustomerMenu = () => {
   const banner = BANNERS[bannerIdx];
 
   return (
-    <div className="min-h-screen pb-24" style={{background: activeTheme.background}}>
-      {/* YOUTUBE-STYLE HERO BANNER */}
-      <div className="relative overflow-hidden" style={{height:'180px'}}>
-        <div className="absolute inset-0" style={{background:`linear-gradient(135deg, ${activeTheme.primary}, ${activeTheme.primaryDark}, ${activeTheme.primary})`}} />
-        <div className="absolute inset-0" style={{background:'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'}} />
-        <div className="absolute inset-0" style={{background:'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%)'}} />
-        {/* Floating orbs */}
-        <div className="absolute w-32 h-32 rounded-full opacity-20" style={{background:activeTheme.primary,filter:'blur(40px)',top:'-20px',right:'-10px',animation:'float 6s ease-in-out infinite'}} />
-        <div className="absolute w-24 h-24 rounded-full opacity-15" style={{background:'#fff',filter:'blur(30px)',bottom:'10px',left:'10%',animation:'float 8s ease-in-out infinite reverse'}} />
-        {/* Cafe Name - YouTube Banner Style */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <div className="text-3xl font-extrabold text-white tracking-wide" style={{textShadow:'0 4px 20px rgba(0,0,0,0.4)',letterSpacing:'1px'}}>{cafe?.name}</div>
-          <div className="flex items-center gap-2 mt-2 text-white/70 text-xs">
-            <span className="flex items-center gap-1"><FiMapPin size={10}/>{cafe?.address||cafe?.city||'Restaurant'}</span>
-            <span>•</span>
-            <span className="flex items-center gap-1"><FiClock size={10}/>{cafe?.openTime}-{cafe?.closeTime}</span>
-            {cafe?.phone && <><span>•</span><span className="flex items-center gap-1"><FiPhone size={10}/>{cafe.phone}</span></>}
+    <div className="min-h-screen pb-28 font-sans" style={{background: activeTheme.background}}>
+      {/* PREMIUM HERO BANNER */}
+      <div className="relative overflow-hidden rounded-b-[2.5rem] shadow-2xl" style={{height:'240px'}}>
+        <div className="absolute inset-0" style={{background:`linear-gradient(135deg, ${activeTheme.cardBg}, ${activeTheme.background})`}} />
+        <div className="absolute inset-0 opacity-40" style={{background:`radial-gradient(circle at 0% 0%, ${activeTheme.primary} 0%, transparent 50%), radial-gradient(circle at 100% 100%, ${activeTheme.primaryDark} 0%, transparent 50%)`}} />
+        <div className="absolute inset-0" style={{backgroundImage:`url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")`}} />
+        {/* Decorative elements */}
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl opacity-40" style={{background:activeTheme.primary}} />
+        <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full blur-3xl opacity-40" style={{background:activeTheme.primaryDark}} />
+        
+        {/* Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pt-4 pb-8 z-10">
+          <div className="w-16 h-16 rounded-2xl mb-3 flex items-center justify-center text-3xl shadow-xl" style={{background:`linear-gradient(135deg, ${activeTheme.primary}, ${activeTheme.primaryDark})`, border:'2px solid rgba(255,255,255,0.15)'}}>
+            {cafe?.name?.charAt(0) || '☕'}
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight" style={{textShadow:'0 4px 15px rgba(0,0,0,0.5)'}}>{cafe?.name}</h1>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-3 text-white/90 text-xs font-medium">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-sm" style={{background:'rgba(255,255,255,0.15)', backdropFilter:'blur(8px)'}}><FiMapPin size={12}/>{cafe?.address||cafe?.city||'Restaurant'}</span>
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-sm" style={{background:'rgba(255,255,255,0.15)', backdropFilter:'blur(8px)'}}><FiClock size={12}/>{cafe?.openTime}-{cafe?.closeTime}</span>
           </div>
         </div>
-        {/* Table Badge - floating */}
-        <div className="absolute bottom-3 left-4">
-          <span className="px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md" style={{background:'rgba(255,255,255,0.15)',color:'#fff',border:'1px solid rgba(255,255,255,0.2)'}}>🪑 Table {tableNo}</span>
+      </div>
+
+      {/* TABLE BADGE OVERLAP */}
+      <div className="flex justify-center -mt-6 relative z-20 mb-6">
+        <div className="px-8 py-3 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-3" style={{background:`linear-gradient(135deg, ${activeTheme.primary}, ${activeTheme.primaryDark})`, border:`2px solid ${activeTheme.background}`}}>
+          <span className="text-2xl drop-shadow-md">🪑</span>
+          <span className="text-white font-black tracking-widest text-sm uppercase">Table {tableNo}</span>
         </div>
       </div>
 
       {/* ADD-ONS / UTILITIES STRIP */}
       {menu.filter(i=>['Add-ons','Extras','Utilities','Add Ons'].includes(i.category)).length > 0 && (
-        <div className="px-4 mt-3">
-          <p className="text-[10px] uppercase tracking-wider mb-2 font-medium" style={{color:activeTheme.textSecondary}}>⚡ Quick Add-ons</p>
-          <div className="flex gap-2 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
+        <div className="px-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] uppercase tracking-widest font-bold" style={{color:activeTheme.textSecondary}}>⚡ Quick Essentials</p>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2" style={{scrollbarWidth:'none'}}>
             {menu.filter(i=>['Add-ons','Extras','Utilities','Add Ons'].includes(i.category)).map(item => {
               const qty = getCartQty(item._id);
               return (
-                <div key={item._id} className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl" style={{background:activeTheme.glassBg,border:`1px solid ${activeTheme.primary}15`}}>
-                  <span className="text-sm">{item.name.includes('Tissue')?'🧻':item.name.includes('Sauce')||item.name.includes('sauce')?'🫙':item.name.includes('Spoon')||item.name.includes('Fork')?'🍴':item.name.includes('Water')?'💧':'➕'}</span>
-                  <div>
-                    <p className="text-[10px] font-medium" style={{color:activeTheme.textPrimary}}>{item.name}</p>
-                    <p className="text-[9px]" style={{color:activeTheme.primary}}>₹{item.price}</p>
+                <div key={item._id} className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 rounded-2xl shadow-sm relative overflow-hidden" style={{background:activeTheme.glassBg, border:`1px solid ${activeTheme.primary}20`}}>
+                  <div className="absolute inset-0 opacity-10" style={{background:activeTheme.primary}} />
+                  <span className="text-lg z-10">{item.name.includes('Tissue')?'🧻':item.name.includes('Sauce')||item.name.includes('sauce')?'🫙':item.name.includes('Spoon')||item.name.includes('Fork')?'🍴':item.name.includes('Water')?'💧':'➕'}</span>
+                  <div className="z-10 pr-2">
+                    <p className="text-xs font-bold whitespace-nowrap" style={{color:activeTheme.textPrimary}}>{item.name}</p>
+                    <p className="text-[10px] font-medium" style={{color:activeTheme.primary}}>₹{item.price}</p>
                   </div>
-                  {qty===0 ? (
-                    <button onClick={()=>handleAddToCart(item)} className="text-[9px] px-2 py-0.5 rounded-md font-bold ml-1" style={{background:activeTheme.primary,color:'#fff'}}>+</button>
-                  ) : (
-                    <span className="text-[10px] font-bold ml-1" style={{color:'#10B981'}}>✓{qty}</span>
-                  )}
+                  <div className="z-10">
+                    {qty===0 ? (
+                      <button onClick={()=>handleAddToCart(item)} className="text-[10px] px-3 py-1.5 rounded-xl font-bold transition-transform active:scale-90" style={{background:activeTheme.primary,color:'#fff',boxShadow:`0 2px 8px ${activeTheme.primary}40`}}>ADD</button>
+                    ) : (
+                      <span className="text-xs font-black px-3 py-1 rounded-xl bg-green-500/20 text-green-500 border border-green-500/30">✓ {qty}</span>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -201,78 +212,109 @@ const CustomerMenu = () => {
         </div>
       )}
 
-      {/* Rotating Promo Banner */}
-      <div className="px-4 mt-3">
-        <div className="rounded-xl p-3 transition-all duration-500 flex items-center gap-3" style={{background:banner.bg}}>
-          <div className="flex-1">
-            <p className="text-white font-bold text-sm">{banner.text}</p>
-            <p className="text-white/70 text-xs">{banner.sub}</p>
+      {/* ROTATING PROMO BANNER */}
+      <div className="px-4 mb-6">
+        <div className="rounded-3xl p-5 transition-all duration-500 flex items-center gap-4 shadow-xl relative overflow-hidden" style={{background:banner.bg}}>
+          <div className="absolute right-0 bottom-0 w-40 h-40 rounded-full blur-2xl opacity-30 bg-white translate-x-1/2 translate-y-1/2" />
+          <div className="flex-1 z-10">
+            <p className="text-white font-black text-xl tracking-tight mb-1" style={{textShadow:'0 2px 4px rgba(0,0,0,0.2)'}}>{banner.text}</p>
+            <p className="text-white/90 text-sm font-medium">{banner.sub}</p>
           </div>
-          <div className="flex gap-1">{BANNERS.map((_,i)=><div key={i} className="w-1.5 h-1.5 rounded-full" style={{background:i===bannerIdx?'#fff':'rgba(255,255,255,0.3)'}}/>)}</div>
+          <div className="flex gap-1.5 z-10">{BANNERS.map((_,i)=><div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i===bannerIdx?'w-5 bg-white':'w-2 bg-white/40'}`}/>)}</div>
         </div>
       </div>
 
-      {/* Search + Filters */}
-      <div className="px-4 mt-4">
-        <div className="relative mb-3">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2" style={{color:activeTheme.textSecondary}} size={14}/>
-          <input type="text" placeholder="Search menu..." value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} className="w-full py-2.5 pl-9 pr-3 rounded-xl text-sm outline-none" style={{background:activeTheme.glassBg, border:`1px solid ${activeTheme.primary}20`, color:activeTheme.textPrimary}} />
+      {/* SEARCH BAR */}
+      <div className="px-4 mb-6">
+        <div className="relative shadow-lg rounded-2xl">
+          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2" style={{color:activeTheme.primary}} size={18}/>
+          <input type="text" placeholder="What are you craving today?" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} className="w-full py-4 pl-12 pr-4 rounded-2xl text-sm outline-none font-medium transition-all" style={{background:activeTheme.glassBg, border:`1px solid ${activeTheme.primary}30`, color:activeTheme.textPrimary, boxShadow:`inset 0 2px 10px rgba(0,0,0,0.1), 0 4px 20px ${activeTheme.primary}10`}} />
         </div>
-        {/* Reorder Banner */}
-        {lastOrder && lastOrder.length > 0 && (
-          <div className="mb-3 rounded-xl p-3 flex items-center gap-3" style={{background:'rgba(245,158,11,0.08)',border:'1px solid rgba(245,158,11,0.2)'}}>
-            <span className="text-2xl">🔄</span>
-            <div className="flex-1">
-              <p className="text-sm font-bold" style={{color:'#F59E0B'}}>Reorder your usual?</p>
-              <p className="text-[10px]" style={{color:activeTheme.textSecondary}}>{lastOrder.map(i=>i.name).join(', ')}</p>
+      </div>
+
+      {/* REORDER BANNER */}
+      {lastOrder && lastOrder.length > 0 && !searchQuery && (
+        <div className="px-4 mb-6">
+          <div className="rounded-3xl p-4 flex items-center gap-4 relative overflow-hidden shadow-lg" style={{background:'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))', border:'1px solid rgba(245,158,11,0.3)'}}>
+            <div className="absolute right-0 top-0 w-40 h-40 rounded-full blur-3xl opacity-20 bg-yellow-500 translate-x-1/2 -translate-y-1/2" />
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-yellow-500/20 shadow-inner z-10 border border-yellow-500/30">🔄</div>
+            <div className="flex-1 z-10">
+              <p className="text-lg font-black tracking-tight" style={{color:'#F59E0B'}}>Order your usual?</p>
+              <p className="text-xs font-medium mt-1 line-clamp-1" style={{color:activeTheme.textSecondary}}>{lastOrder.map(i=>i.name).join(', ')}</p>
             </div>
-            <button onClick={handleReorder} className="text-xs px-3 py-1.5 rounded-lg font-bold" style={{background:'#F59E0B',color:'#000'}}>Add All</button>
+            <button onClick={handleReorder} className="text-sm px-6 py-3 rounded-xl font-black shadow-xl z-10 active:scale-95 transition-transform" style={{background:'#F59E0B',color:'#000'}}>ADD ALL</button>
           </div>
-        )}
-        {/* Category Cards with Emojis */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2" style={{scrollbarWidth:'none'}}>
-          <button onClick={()=>setVegOnly(!vegOnly)} className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex-shrink-0" style={vegOnly?{color:'#10B981',background:'rgba(16,185,129,0.12)',border:'1px solid #10B981'}:{color:activeTheme.textSecondary,background:'rgba(255,255,255,0.04)',border:'1px solid transparent'}}>
-            <span className="text-lg">🟢</span><span>Veg</span>
+        </div>
+      )}
+
+      {/* CATEGORY FILTERS */}
+      <div className="pl-4 mb-6">
+        <div className="flex items-center gap-3 overflow-x-auto pb-3 pr-4" style={{scrollbarWidth:'none'}}>
+          <button onClick={()=>setVegOnly(!vegOnly)} className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold whitespace-nowrap transition-all flex-shrink-0 border"
+            style={vegOnly
+              ? {background:'rgba(16,185,129,0.15)', color:'#10B981', borderColor:'#10B981', boxShadow:`0 4px 15px rgba(16,185,129,0.25)`}
+              : {background:activeTheme.glassBg, color:activeTheme.textSecondary, borderColor:`${activeTheme.primary}20`}}>
+            <span className="text-lg" style={{filter:vegOnly?'drop-shadow(0 2px 4px rgba(16,185,129,0.4))':'none'}}>🟢</span><span>Veg Only</span>
           </button>
           {categories.map(cat=>(
-            <button key={cat} onClick={()=>setActiveCategory(cat)} className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex-shrink-0"
-              style={activeCategory===cat?{background:activeTheme.primary,color:'#fff',boxShadow:`0 2px 10px ${activeTheme.primaryLight}`}:{background:'rgba(255,255,255,0.04)',color:activeTheme.textSecondary}}>
-              <span className="text-lg">{CAT_EMOJI[cat]||'🍽️'}</span><span>{cat}</span>
+            <button key={cat} onClick={()=>setActiveCategory(cat)} className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold whitespace-nowrap transition-all flex-shrink-0 border"
+              style={activeCategory===cat
+                ? {background:activeTheme.primary, color:'#fff', borderColor:activeTheme.primary, boxShadow:`0 6px 20px ${activeTheme.primary}60`}
+                : {background:activeTheme.glassBg, color:activeTheme.textSecondary, borderColor:`${activeTheme.primary}20`}}>
+              <span className="text-lg" style={{filter: activeCategory===cat ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'}}>{CAT_EMOJI[cat]||'🍽️'}</span>
+              <span>{cat}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Menu Items */}
-      <div className="px-4 mt-3 space-y-3">
+      {/* MENU ITEMS GRID */}
+      <div className="px-4 space-y-5">
         {filteredMenu.length===0 ? (
-          <div className="text-center py-12"><div className="text-4xl mb-3 opacity-40">🍽️</div><p style={{color:activeTheme.textSecondary}}>No items found</p></div>
+          <div className="text-center py-16"><div className="text-6xl mb-4 opacity-30" style={{filter:'grayscale(1)'}}>🍽️</div><p className="text-lg font-medium" style={{color:activeTheme.textSecondary}}>No items found</p></div>
         ) : filteredMenu.map(item => {
           const qty = getCartQty(item._id);
           return (
-            <div key={item._id} className="rounded-2xl p-4 flex gap-3 transition-all" style={{background:activeTheme.glassBg, border:`1px solid ${activeTheme.primary}10`}}>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`w-4 h-4 rounded-sm flex items-center justify-center text-[8px] border ${item.isVeg?'border-green-500 text-green-500':'border-red-500 text-red-500'}`}>{item.isVeg?'●':'▲'}</span>
-                  <span className="font-medium text-sm truncate" style={{color:activeTheme.textPrimary}}>{item.name}</span>
+            <div key={item._id} className="relative rounded-3xl p-4 flex gap-4 transition-all overflow-hidden" style={{background:activeTheme.glassBg, border:`1px solid ${activeTheme.primary}20`, boxShadow:`0 8px 30px rgba(0,0,0,0.15)`}}>
+              {/* Subtle background glow */}
+              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-10" style={{background:activeTheme.primary}} />
+              
+              <div className="flex-1 min-w-0 z-10 py-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-4 h-4 rounded-sm flex items-center justify-center text-[10px] border shadow-sm ${item.isVeg?'border-green-500 text-green-500 bg-green-500/10':'border-red-500 text-red-500 bg-red-500/10'}`}>{item.isVeg?'●':'▲'}</span>
+                  {item.category && !['Add-ons','Extras','Utilities'].includes(item.category) && (
+                    <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full" style={{background:`${activeTheme.primary}20`, color:activeTheme.primary}}>{item.category}</span>
+                  )}
                 </div>
-                {item.description && <p className="text-xs mb-2 line-clamp-2" style={{color:activeTheme.textSecondary}}>{item.description}</p>}
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm" style={{color:activeTheme.primary}}>₹{item.price}</span>
-                  {item.preparationTime>0 && <span className="text-[10px] flex items-center gap-0.5" style={{color:activeTheme.textSecondary}}><FiClock size={9}/>{item.preparationTime}m</span>}
+                <h3 className="font-black text-lg leading-tight mb-1.5 tracking-tight" style={{color:activeTheme.textPrimary}}>{item.name}</h3>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="font-extrabold text-base" style={{color:activeTheme.textPrimary}}>₹{item.price}</span>
+                  {item.preparationTime>0 && <span className="text-[10px] flex items-center gap-1 font-medium px-2 py-0.5 rounded-md" style={{background:'rgba(255,255,255,0.06)', color:activeTheme.textSecondary}}><FiClock size={10}/>{item.preparationTime}m</span>}
                 </div>
+                {item.description && <p className="text-xs line-clamp-2" style={{color:activeTheme.textSecondary, lineHeight:'1.6'}}>{item.description}</p>}
               </div>
-              <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                {item.image ? <img src={item.image} alt={item.name} className="w-20 h-20 rounded-xl object-cover"/> : <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl" style={{background:activeTheme.primaryLight}}>🍽️</div>}
-                {qty===0 ? (
-                  <button onClick={()=>handleAddToCart(item)} className="text-xs py-1.5 px-5 rounded-xl font-bold" style={{background:activeTheme.primary,color:'#fff',boxShadow:`0 2px 8px ${activeTheme.primaryLight}`}}>ADD</button>
+              
+              <div className="relative flex flex-col items-center flex-shrink-0 z-10 w-28 pb-4">
+                {item.image ? (
+                  <img src={item.image} alt={item.name} className="w-28 h-28 rounded-2xl object-cover shadow-xl" style={{border:`1px solid ${activeTheme.primary}30`}}/>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-xl px-1 py-0.5" style={{background:`${activeTheme.primary}15`}}>
-                    <button onClick={()=>updateQuantity(item._id,-1)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{color:'#F43F5E'}}><FiMinus size={14}/></button>
-                    <span className="font-bold text-sm w-4 text-center" style={{color:activeTheme.textPrimary}}>{qty}</span>
-                    <button onClick={()=>updateQuantity(item._id,1)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{color:'#10B981'}}><FiPlus size={14}/></button>
+                  <div className="w-28 h-28 rounded-2xl flex items-center justify-center text-5xl shadow-xl relative overflow-hidden" style={{background:`linear-gradient(135deg, ${activeTheme.primary}30, ${activeTheme.primary}10)`, border:`1px solid ${activeTheme.primary}20`}}>
+                    <div className="absolute inset-0 opacity-20" style={{backgroundImage:'radial-gradient(circle at center, #fff 1px, transparent 1px)', backgroundSize:'12px 12px'}} />
+                    <span style={{filter:`drop-shadow(0 8px 16px rgba(0,0,0,0.4))`}}>{CAT_EMOJI[item.category] || '🍽️'}</span>
                   </div>
                 )}
+                
+                <div className="absolute -bottom-1 w-full flex justify-center">
+                  {qty===0 ? (
+                    <button onClick={()=>handleAddToCart(item)} className="text-sm py-2 px-7 rounded-xl font-black transition-transform active:scale-95 text-white" style={{background:activeTheme.primary, boxShadow:`0 6px 20px ${activeTheme.primary}60`, border:`2px solid ${activeTheme.cardBg}`}}>ADD</button>
+                  ) : (
+                    <div className="flex items-center justify-between w-[90%] rounded-xl px-1.5 py-1.5 shadow-xl text-white" style={{background:activeTheme.primary, boxShadow:`0 6px 20px ${activeTheme.primary}60`, border:`2px solid ${activeTheme.cardBg}`}}>
+                      <button onClick={()=>updateQuantity(item._id,-1)} className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 bg-white/20 hover:bg-white/30 transition-colors"><FiMinus size={16}/></button>
+                      <span className="font-black text-sm">{qty}</span>
+                      <button onClick={()=>updateQuantity(item._id,1)} className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 bg-white/20 hover:bg-white/30 transition-colors"><FiPlus size={16}/></button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );

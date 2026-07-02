@@ -139,9 +139,9 @@ const CafeDashboard = () => {
   useEffect(() => {
     if (!soundOn) return;
     const hasActiveLateOrder = orders.some(order => {
-      if (order.status === 'served' || order.status === 'cancelled') return false;
+      if (order.status !== 'pending') return false;
       if (silencedOrders.has(order._id)) return false;
-      return (Date.now() - new Date(order.createdAt).getTime()) >= 15 * 60 * 1000;
+      return (Date.now() - new Date(order.createdAt).getTime()) >= 1 * 60 * 1000;
     });
     
     if (hasActiveLateOrder && tick % 5 === 0) {
@@ -420,7 +420,7 @@ const CafeDashboard = () => {
               </select>
             </div>
             <div className="flex flex-wrap gap-2 mb-4">
-              {['all','pending','confirmed','preparing','ready','served','cancelled'].map(s => (
+              {['all','pending','confirmed','completed','cancelled'].map(s => (
                 <button key={s} onClick={() => setOrderFilter(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${orderFilter===s ? 'text-white' : 'text-[#8B8FA3] hover:text-white'}`}
                   style={orderFilter===s ? {background:'linear-gradient(135deg,#7C3AED,#6D28D9)',boxShadow:'0 2px 10px rgba(124,58,237,0.25)'} : {background:'rgba(255,255,255,0.04)'}}>
@@ -447,16 +447,16 @@ const CafeDashboard = () => {
             ) : (
               <div className="grid gap-3">
                 {orders.filter(o => !orderSearch || o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase())).map(order => {
-                  const statusColors = {pending:'#F59E0B',confirmed:'#7C3AED',preparing:'#FB923C',ready:'#10B981',served:'#22C55E',cancelled:'#F43F5E'};
+                  const statusColors = {pending:'#F59E0B',confirmed:'#7C3AED',completed:'#22C55E',cancelled:'#F43F5E',preparing:'#FB923C',ready:'#10B981',served:'#22C55E'};
                   const elapsedMs = Date.now() - new Date(order.createdAt).getTime();
-                  const isLate = order.status !== 'served' && order.status !== 'cancelled' && elapsedMs >= 15 * 60 * 1000;
+                  const isLate = order.status === 'pending' && elapsedMs >= 1 * 60 * 1000;
                   const isSilenced = silencedOrders.has(order._id);
                   
                   return (
                     <div key={order._id} className="glow-card p-4 slide-up" style={{
                       borderLeft:`3px solid ${isLate ? '#F43F5E' : (statusColors[order.status]||'#7C3AED')}`,
                       ...(isLate && !isSilenced ? { boxShadow:'0 0 20px rgba(244,63,94,0.3)', borderColor:'rgba(244,63,94,0.6)' } : {}),
-                      ...(order.status === 'served' && order.paymentStatus !== 'paid' ? { boxShadow:'0 0 20px rgba(245,158,11,0.15)', borderColor:'rgba(245,158,11,0.3)' } : {})
+                      ...((order.status === 'served' || order.status === 'completed') && order.paymentStatus !== 'paid' ? { boxShadow:'0 0 20px rgba(245,158,11,0.15)', borderColor:'rgba(245,158,11,0.3)' } : {})
                     }}>
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -479,7 +479,7 @@ const CafeDashboard = () => {
                           </p>
                           <div className="flex items-center gap-3 mt-0.5">
                             <span className="text-xs" style={{color:'#565970'}}><FiClock className="inline mr-1" size={10}/>{timeAgo(order.createdAt)}</span>
-                            {order.status !== 'served' && order.status !== 'cancelled' && (
+                            {order.status !== 'served' && order.status !== 'completed' && order.status !== 'cancelled' && (
                               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md" style={{background:'rgba(245,158,11,0.1)',color:'#F59E0B'}} key={tick}>⏱ {elapsedTimer(order.createdAt)}</span>
                             )}
                           </div>
@@ -505,12 +505,12 @@ const CafeDashboard = () => {
                         <div className="flex gap-3 flex-wrap pt-3 mt-3 items-center justify-start" style={{borderTop:'1px solid rgba(255,255,255,0.06)'}}>
                           {/* Food Status */}
                           {order.status === 'pending' && <>
-                            <button onClick={() => handleStatusUpdate(order._id, 'confirmed')} className="btn-primary text-sm py-2 px-5"><FiCheck size={14} /> Confirm</button>
+                            <button onClick={() => handleStatusUpdate(order._id, 'confirmed')} className="btn-primary text-sm py-2 px-5"><FiCheck size={14} /> Confirm Order</button>
                             <button onClick={() => handleStatusUpdate(order._id, 'cancelled')} className="btn-danger text-sm py-2 px-4"><FiX size={14} /> Reject</button>
                           </>}
-                          {order.status === 'confirmed' && <button onClick={() => handleStatusUpdate(order._id, 'preparing')} className="btn-primary text-sm py-2 px-5">🍳 Start Preparing</button>}
+                          {order.status === 'confirmed' && <button onClick={() => handleStatusUpdate(order._id, 'completed')} className="btn-primary text-sm py-2 px-5">✅ Complete</button>}
                           {order.status === 'preparing' && <button onClick={() => handleStatusUpdate(order._id, 'ready')} className="btn-primary text-sm py-2 px-5">✅ Mark Ready</button>}
-                          {order.status === 'ready' && <button onClick={() => handleStatusUpdate(order._id, 'served')} className="btn-primary text-sm py-2 px-5">🍽️ Mark Served</button>}
+                          {order.status === 'ready' && <button onClick={() => handleStatusUpdate(order._id, 'completed')} className="btn-primary text-sm py-2 px-5">🍽️ Complete</button>}
                           
                           {/* Buzzer Silence Button */}
                           {isLate && !isSilenced && (
