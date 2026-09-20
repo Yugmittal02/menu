@@ -154,16 +154,18 @@ class CashfreePaymentProvider extends PaymentProvider {
       verify_account: false,
       dashboard_access: false,
       schedule_option: 1,
-      bank_details: {
+      bank: {
         account_number: vendorData.bankAccount,
         account_holder: vendorData.accountHolderName,
         ifsc: vendorData.ifsc
+      },
+      kyc_details: {
+        account_type: vendorData.businessType || 'INDIVIDUAL',
+        business_type: vendorData.kycDetails?.business_type || 'Food and Beverages',
+        pan: vendorData.kycDetails?.pan || '',
+        gst: vendorData.kycDetails?.gst || ''
       }
     };
-
-    if (vendorData.kycDetails) {
-      payload.kyc_details = vendorData.kycDetails;
-    }
 
     return await this._request('/easy-split/vendors', 'POST', payload);
   }
