@@ -152,7 +152,7 @@ class PaymentOrderService {
         },
         orderMeta: {
           returnUrl: returnUrl || null,
-          notifyUrl: notifyUrl || null
+          notifyUrl: notifyUrl || process.env.CASHFREE_NOTIFY_URL || null
         },
         splits
       });
