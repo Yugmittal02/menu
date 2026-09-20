@@ -5,6 +5,9 @@ const couponSchema = new mongoose.Schema({
   code: { type: String, required: true, uppercase: true, trim: true },
   type: { type: String, enum: ['percentage', 'flat'], required: true },
   value: { type: Number, required: true, min: 1 },
+  title: { type: String, default: '', trim: true }, // e.g. "15% OFF — All Drinks"
+  description: { type: String, default: '', trim: true }, // e.g. "Valid on iced teas, cold brews & signature lattes"
+  image: { type: String, default: '' },
   minOrder: { type: Number, default: 0 },
   maxDiscount: { type: Number, default: 0 }, // 0 = no cap
   usageLimit: { type: Number, default: 0 }, // 0 = unlimited

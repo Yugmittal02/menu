@@ -58,23 +58,32 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = (item) => {
+    const qtyToAdd = Number(item.quantity) > 0 ? Number(item.quantity) : 1;
     setCart((prev) => {
-      const existingIndex = prev.findIndex(i => i.menuItemId === item.menuItemId);
+      const existingIndex = prev.findIndex(
+        (i) =>
+          (item.menuItemId && i.menuItemId === item.menuItemId) ||
+          (item._id && (i._id === item._id || i.menuItemId === item._id))
+      );
       if (existingIndex >= 0) {
         const updated = [...prev];
-        updated[existingIndex].quantity += 1;
+        updated[existingIndex].quantity += qtyToAdd;
+        if (item.specialInstructions) {
+          updated[existingIndex].specialInstructions = item.specialInstructions;
+        }
         return updated;
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, quantity: qtyToAdd }];
     });
   };
 
   const updateQuantity = (menuItemId, delta) => {
+    const numDelta = Number(delta) || (delta < 0 ? -1 : 1);
     setCart((prev) =>
       prev
         .map((item) => {
-          if (item.menuItemId === menuItemId) {
-            const newQty = item.quantity + delta;
+          if (item.menuItemId === menuItemId || item._id === menuItemId) {
+            const newQty = item.quantity + numDelta;
             return newQty > 0 ? { ...item, quantity: newQty } : null;
           }
           return item;

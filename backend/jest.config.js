@@ -5,16 +5,14 @@ module.exports = {
     'controllers/**/*.js',
     'middleware/**/*.js',
     'routes/**/*.js',
-    '!routes/payments.js', // Exclude Razorpay routes
-    '!controllers/paymentController.js', // Exclude Razorpay controller
+    'services/**/*.js',
     '!node_modules/**'
   ],
   testMatch: [
     '**/tests/**/*.test.js'
   ],
   testPathIgnorePatterns: [
-    '/node_modules/',
-    '/tests/.*payment.*' // Ignore any payment-related test files
+    '/node_modules/'
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   testTimeout: 30000,

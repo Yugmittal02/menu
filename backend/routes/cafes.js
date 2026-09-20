@@ -2,7 +2,8 @@ const router = require('express').Router();
 const { verifyToken, isSuperAdmin, isCafeOwner, attachCafe } = require('../middleware/authMiddleware');
 const {
   createCafe, getAllCafes, getPublicCafeInfo, getMyCafe,
-  updateCafe, toggleCafeStatus, deleteCafe, changeCafePassword
+  updateCafe, toggleCafeStatus, deleteCafe, changeCafePassword,
+  getMyOnboarding, updateMyOnboarding
 } = require('../controllers/cafeController');
 
 // Public
@@ -17,6 +18,8 @@ router.delete('/:id', verifyToken, isSuperAdmin, deleteCafe);
 
 // Cafe Owner routes
 router.get('/me', verifyToken, isCafeOwner, getMyCafe);
+router.get('/me/onboarding', verifyToken, isCafeOwner, getMyOnboarding);
+router.put('/me/onboarding', verifyToken, isCafeOwner, updateMyOnboarding);
 router.put('/me/update', verifyToken, isCafeOwner, attachCafe, (req, res, next) => {
   req.params.id = req.user.cafeId;
   next();

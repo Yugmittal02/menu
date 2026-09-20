@@ -37,13 +37,20 @@ const App = () => (
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/apply" element={<LandingPage />} />
+            <Route path="/demo" element={<LandingPage />} />
+            <Route path="/login" element={<Navigate to="/cafe/login" replace />} />
+            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
             <Route path="/admin/login" element={<SuperAdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminRoute><SuperAdminDashboard /></AdminRoute>} />
+            <Route path="/admin/support" element={<AdminRoute><SuperAdminDashboard initialTab="support" /></AdminRoute>} />
             <Route path="/cafe/login" element={<CafeLogin />} />
             <Route path="/cafe/dashboard" element={<CafeRoute><CafeDashboard /></CafeRoute>} />
+            <Route path="/c/:cafeSlug/t/:tableId" element={<CustomerMenu />} />
+            <Route path="/c/:cafeSlug" element={<CustomerMenu />} />
             <Route path="/cafe/:cafeId/table/:tableNo" element={<CustomerMenu />} />
             <Route path="/order/track/:orderNumber" element={<OrderTrack />} />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </Router>

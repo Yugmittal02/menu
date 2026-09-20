@@ -20,6 +20,14 @@ const menuItemSchema = new mongoose.Schema({
   isAvailable: { type: Boolean, default: true },
   preparationTime: { type: Number, default: 15 }, // minutes
   sortOrder: { type: Number, default: 0 },
+  badge: { type: String, default: '', trim: true }, // 'Bestseller', "Chef's Pick", 'Must Try', 'New', 'Popular'
+  spiceLevel: { type: Number, default: 0, min: 0, max: 3 }, // 0 = mild, 1 = medium, 2 = spicy, 3 = extra spicy
+  calories: { type: Number, default: 0 },
+  // Inventory & Stock Tracking (Phase 2)
+  trackStock: { type: Boolean, default: false },
+  stockQuantity: { type: Number, default: 0, min: 0 },
+  lowStockThreshold: { type: Number, default: 5, min: 0 },
+  isOutOfStock: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -70,8 +70,15 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-// Body parser
-app.use(express.json({ limit: "10mb" }));
+// Body parser with raw body capture for webhook HMAC signature verification
+app.use(
+  express.json({
+    limit: "10mb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString("utf8");
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // NoSQL injection prevention
@@ -106,22 +113,127 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("✅ MongoDB Connected");
-    
-    // Check Cloudinary Config
-    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
-      console.log("✅ Cloudinary Configured");
-    } else {
-      console.warn("⚠️  Cloudinary not configured — image uploads will fail");
+const User = require("./models/User");
+
+const seedInitialData = async () => {
+  try {
+    const existingAdmin = await User.findOne({ role: "superadmin" });
+    if (!existingAdmin) {
+      const admin = new User({
+        name: "Super Admin",
+        email: "yugmittal689@gmail.com",
+        password: "Yugmittal@22",
+        role: "superadmin",
+      });
+      await admin.save();
+      console.log("✅ SuperAdmin seeded successfully!");
+      console.log("   Email: yugmittal689@gmail.com");
+      console.log("   Password: Yugmittal@22");
     }
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err.message);
-    process.exit(1);
+
+    // Seed default cafes and sample menu items if empty
+    const Cafe = require("./models/Cafe");
+    const MenuItem = require("./models/MenuItem");
+    const cafeCount = await Cafe.countDocuments();
+    if (cafeCount === 0) {
+      const offlineStore = require("./utils/offlineStore");
+      const offlineCafes = offlineStore.getCafes ? offlineStore.getCafes() : [];
+      for (const c of offlineCafes) {
+        const newCafe = new Cafe({
+          cafeId: c.cafeId,
+          name: c.name,
+          ownerName: c.ownerName,
+          phone: c.phone,
+          email: c.email || '',
+          address: c.address || '',
+          city: c.city || '',
+          tableCount: c.tableCount || 10,
+          openTime: c.openTime || '10:00',
+          closeTime: c.closeTime || '23:00',
+          theme: 'classic-dark',
+          isActive: true,
+          taxPercent: 5,
+          taxLabel: 'GST',
+          kotPrefix: 'KOT',
+          invoicePrefix: 'INV',
+          footerText: 'Thank you for dining with us! Please visit again.'
+        });
+        await newCafe.save();
+
+        const sampleItems = [
+          { name: 'Espresso Romano', category: 'Beverages', price: 180, isVeg: true, isAvailable: true },
+          { name: 'Cold Brew Float', category: 'Beverages', price: 240, isVeg: true, isAvailable: true },
+          { name: 'Truffle Parmesan Fries', category: 'Snacks', price: 260, isVeg: true, isAvailable: true },
+          { name: 'Paneer Tikka Panini', category: 'Main Course', price: 340, isVeg: true, isAvailable: true },
+          { name: 'Grilled Chicken Ciabatta', category: 'Main Course', price: 380, isVeg: false, isAvailable: true },
+          { name: 'Artisan Sourdough Pizza', category: 'Main Course', price: 450, isVeg: true, isAvailable: true },
+          { name: 'Classic Tiramisu', category: 'Desserts', price: 290, isVeg: true, isAvailable: true }
+        ];
+        for (const it of sampleItems) {
+          await new MenuItem({ ...it, cafe: newCafe._id }).save();
+        }
+      }
+      console.log("✅ Initial cafes and sample menu items seeded successfully!");
+    }
+  } catch (err) {
+    console.error("⚠️ Error seeding initial data:", err.message);
+  }
+};
+
+const connectWithTimeout = (uri, options = {}, timeoutMs = 3000) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`MongoDB connection timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    mongoose.connect(uri, options).then(
+      (res) => {
+        clearTimeout(timer);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
   });
+};
+
+const connectDatabase = async () => {
+  try {
+    console.log("⏳ Connecting to Primary MongoDB...");
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    console.log("✅ MongoDB Connected (Atlas)");
+    await seedInitialData();
+  } catch (err) {
+    console.warn("⚠️ Primary MongoDB unreachable:", err.message);
+    console.log("ℹ️ Offline mode: Activated persistent local store.");
+    console.log("✅ SuperAdmin, Applications, POS, Sessions, and Cafe management fully operational locally!");
+  }
+};
+
+mongoose.connection.on("error", (err) => {
+  console.warn("⚠️ Mongoose connection error (handled):", err.message);
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.warn("⚠️ Mongoose disconnected from MongoDB");
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("⚠️ Process caught uncaughtException:", err.message);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("⚠️ Process caught unhandledRejection:", reason);
+});
+
+mongoose.set('bufferTimeoutMS', 2500);
+connectDatabase();
 
 // ===================
 // ROUTES
@@ -132,14 +244,17 @@ app.use("/api/menu", require("./routes/menu"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/coupons", require("./routes/coupons"));
 app.use("/api/upload", require("./routes/upload"));
-
-// Stricter rate limit for order placement
-const orderLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: isProduction ? 5 : 999,
-  message: { message: "Too many orders. Please wait a moment." },
-});
-app.use("/api/orders", orderLimiter);
+app.use("/api/applications", require("./routes/applications"));
+app.use("/api/sessions", require("./routes/sessions"));
+app.use("/api/pos", require("./routes/pos"));
+app.use("/api/reservations", require("./routes/reservations"));
+app.use("/api/staff", require("./routes/staff"));
+app.use("/api/customers", require("./routes/customers"));
+app.use("/api/inventory", require("./routes/inventory"));
+app.use("/api/support", require("./routes/support"));
+app.use("/api/payments", require("./routes/payments"));
+app.use("/api/webhooks", require("./routes/webhooks"));
+app.use("/api/admin/payments", require("./routes/adminPayments"));
 
 // Health check
 app.get("/", (req, res) => {
@@ -151,6 +266,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
+  res.json({ status: "healthy" });
+});
+
+app.get("/api/health", (req, res) => {
   res.json({ status: "healthy" });
 });
 
@@ -189,16 +308,21 @@ app.use((err, req, res, next) => {
 // ===================
 // SERVER
 // ===================
-const server = app.listen(PORT, () => {
-  console.log(`🚀 QR Menu Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
-});
+let server;
+if (process.env.NODE_ENV !== "test") {
+  server = app.listen(PORT, () => {
+    console.log(`🚀 QR Menu Server running on port ${PORT}`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received. Shutting down...");
-  server.close(() => {
-    mongoose.connection.close(false, () => {
-      process.exit(0);
+  process.on("SIGTERM", () => {
+    console.log("SIGTERM received. Shutting down...");
+    server.close(() => {
+      mongoose.connection.close(false, () => {
+        process.exit(0);
+      });
     });
   });
-});
+}
+
+module.exports = app;

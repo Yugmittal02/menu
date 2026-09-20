@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { cafeOwnerLogin } from '../services/api';
 import { FiCoffee, FiHash, FiLock, FiArrowLeft } from 'react-icons/fi';
+import ProductSignature from '../components/brand/ProductSignature';
+import PoweredByKrixov from '../components/brand/PoweredByKrixov';
 
 const CafeLogin = () => {
   const [cafeId, setCafeId] = useState('');
@@ -41,12 +43,15 @@ const CafeLogin = () => {
           <FiArrowLeft /> Back
         </Link>
 
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{background:'linear-gradient(135deg,#F43F5E,#E11D48)',boxShadow:'0 8px 25px rgba(244,63,94,0.3)'}}>
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <ProductSignature align="center" />
+          </div>
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{background:'linear-gradient(135deg,#F43F5E,#E11D48)',boxShadow:'0 8px 25px rgba(244,63,94,0.3)'}}>
             <FiCoffee className="text-white text-2xl" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Cafe Owner Login</h1>
-          <p className="text-gray-400 text-sm mt-1">Login with your Cafe ID</p>
+          <h1 className="text-xl font-bold text-white">Cafe Owner Login</h1>
+          <p className="text-gray-400 text-xs mt-1">Sign in with your registered Cafe ID</p>
         </div>
 
         {error && (
@@ -67,6 +72,10 @@ const CafeLogin = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-8 pt-4 border-t border-white/5 flex justify-center text-slate-500">
+          <PoweredByKrixov className="text-slate-400 hover:text-white" />
+        </div>
       </div>
     </div>
   );

@@ -54,7 +54,7 @@ router.post('/', verifyToken, isCafeOwner, upload.single('image'), async (req, r
     });
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ message: 'Upload failed' });
+    res.status(500).json({ message: error.message || 'Upload failed' });
   }
 });
 
