@@ -63,7 +63,7 @@ app.use(
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProduction ? 200 : 99999,
+  max: isProduction ? 5000 : 99999,
   message: { message: "Too many requests, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,

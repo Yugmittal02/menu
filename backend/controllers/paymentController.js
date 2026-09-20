@@ -106,9 +106,11 @@ exports.connectAccount = async (req, res) => {
       data: account
     });
   } catch (err) {
+    console.error('Payment connect error:', err.message, err.details || '');
     res.status(400).json({
       success: false,
-      message: err.message
+      message: err.message || 'Failed to connect Cashfree payment account',
+      details: err.details || null
     });
   }
 };
