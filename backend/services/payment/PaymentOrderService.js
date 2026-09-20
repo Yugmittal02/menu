@@ -157,10 +157,30 @@ class PaymentOrderService {
         splits
       });
     } catch (err) {
-      payment.status = 'FAILED';
-      payment.failure_reason = err.message;
-      await payment.save();
-      throw err;
+      if (err.message && err.message.toLowerCase().includes('not enabled with easy splits')) {
+        // Fallback to direct payment without splits so real production payments succeed
+        cfResponse = await this.provider.createPaymentOrder({
+          orderId: providerOrderId,
+          amount: amountRupees,
+          currency: 'INR',
+          customer: {
+            id: customerDetails.id || `cust_${payment._id.toString().slice(-8)}`,
+            name: customerDetails.name || 'Dine-in Customer',
+            phone: customerDetails.phone || '9999999999',
+            email: customerDetails.email || 'customer@krixov.com'
+          },
+          orderMeta: {
+            returnUrl: returnUrl || null,
+            notifyUrl: notifyUrl || process.env.CASHFREE_NOTIFY_URL || null
+          },
+          splits: []
+        });
+      } else {
+        payment.status = 'FAILED';
+        payment.failure_reason = err.message;
+        await payment.save();
+        throw err;
+      }
     }
 
     payment.cf_payment_session_id = cfResponse.paymentSessionId;

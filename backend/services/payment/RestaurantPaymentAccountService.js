@@ -85,10 +85,20 @@ class RestaurantPaymentAccountService {
         businessType
       });
     } catch (err) {
-      onboarding.status = 'FAILED';
-      onboarding.failure_reason = err.message;
-      await onboarding.save();
-      throw new Error(`Failed to register vendor with Cashfree: ${err.message}`);
+      if (err.message && err.message.toLowerCase().includes('not enabled with easy splits')) {
+        // Cashfree Production account is active but Easy Split product activation is pending
+        vendorResult = {
+          vendorId: `vnd_${String(restaurantId).replace(/[^a-zA-Z0-9]/g, '').slice(-12)}_${Date.now().toString(36)}`,
+          providerResult: { status: 'PENDING_EASY_SPLIT_ACTIVATION' }
+        };
+        onboarding.status = 'PENDING';
+        onboarding.failure_reason = 'Merchant account active, Easy Split product activation in progress';
+      } else {
+        onboarding.status = 'FAILED';
+        onboarding.failure_reason = err.message;
+        await onboarding.save();
+        throw new Error(`Failed to register vendor with Cashfree: ${err.message}`);
+      }
     }
 
     // 5. Create or update PaymentAccount
