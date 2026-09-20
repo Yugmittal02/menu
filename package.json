@@ -1,0 +1,12 @@
+{
+  "name": "krixov-qr-menu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Krixov QR Menu & Restaurant Ordering SaaS",
+  "scripts": {
+    "install-backend": "cd backend && npm install",
+    "postinstall": "cd backend && npm install",
+    "build": "cd backend && npm install",
+    "start": "cd backend && npm start"
+  }
+}
