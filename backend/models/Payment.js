@@ -40,8 +40,7 @@ const paymentSchema = new mongoose.Schema({
     required: true
   },
   provider_payment_id: {
-    type: String,
-    default: null
+    type: String
   },
   // Immutable once payment succeeds — NEVER reassign
   provider_vendor_id: {
@@ -126,7 +125,16 @@ const paymentSchema = new mongoose.Schema({
 
 // Unique constraints
 paymentSchema.index({ provider_order_id: 1 }, { unique: true });
-paymentSchema.index({ provider_payment_id: 1 }, { unique: true, sparse: true });
+paymentSchema.index(
+  { provider_payment_id: 1 },
+  {
+    unique: true,
+    sparse: true,
+    partialFilterExpression: {
+      provider_payment_id: { $type: 'string', $gt: '' }
+    }
+  }
+);
 paymentSchema.index({ idempotency_key: 1 }, { unique: true });
 
 // Query optimization
