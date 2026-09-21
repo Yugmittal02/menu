@@ -85,7 +85,13 @@ class RestaurantPaymentAccountService {
         businessType
       });
     } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('not enabled with easy splits')) {
+      const errMsg = (err.message || '').toLowerCase();
+      const isSplitError = errMsg.includes('easy split') ||
+                           errMsg.includes('split') ||
+                           errMsg.includes('account manager') ||
+                           errMsg.includes('vendor');
+
+      if (isSplitError) {
         // Cashfree Production account is active but Easy Split product activation is pending
         vendorResult = {
           vendorId: `vnd_${String(restaurantId).replace(/[^a-zA-Z0-9]/g, '').slice(-12)}_${Date.now().toString(36)}`,

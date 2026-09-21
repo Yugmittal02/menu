@@ -157,7 +157,13 @@ class PaymentOrderService {
         splits
       });
     } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('not enabled with easy splits')) {
+      const errMsg = (err.message || '').toLowerCase();
+      const isSplitError = errMsg.includes('easy split') ||
+                           errMsg.includes('split') ||
+                           errMsg.includes('account manager') ||
+                           errMsg.includes('vendor');
+
+      if (isSplitError) {
         // Fallback to direct payment without splits so real production payments succeed
         cfResponse = await this.provider.createPaymentOrder({
           orderId: providerOrderId,
