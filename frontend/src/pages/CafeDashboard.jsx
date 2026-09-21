@@ -386,10 +386,11 @@ const CafeDashboard = () => {
         const results = await Promise.allSettled([
           getCafeOrders(orderQuery),
           getCafeStats({ date: dateFilter }),
-          getActiveSessions()
+          getActiveSessions(),
+          getSystemModules()
         ]);
 
-        const [orderResult, statsResult, sessResult] = results;
+        const [orderResult, statsResult, sessResult, sysResult] = results;
 
         if (orderResult.status === 'fulfilled' && orderResult.value?.data) {
           const newOrders = orderResult.value.data;
@@ -412,6 +413,10 @@ const CafeDashboard = () => {
 
         if (sessResult.status === 'fulfilled' && sessResult.value?.data) {
           setSessions(sessResult.value.data);
+        }
+
+        if (sysResult.status === 'fulfilled' && sysResult.value?.data?.modules) {
+          setSystemModules(sysResult.value.data.modules);
         }
       } catch (e) {
         // Silently preserve existing data on background network failure
@@ -915,6 +920,9 @@ const CafeDashboard = () => {
         refreshToast={refreshToast}
         menu={menu}
         onRefreshData={loadData}
+        systemModules={systemModules}
+        noticesCount={notices.length}
+        onOpenNoticeDrawer={() => setIsNoticeDrawerOpen(true)}
       >
         {/* OVERVIEW TAB */}
         {activeTab === 'Overview' && (

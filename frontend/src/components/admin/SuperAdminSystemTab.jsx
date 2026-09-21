@@ -103,15 +103,25 @@ export default function SuperAdminSystemTab() {
     loadNoticesAndCafes();
   }, []);
 
-  // Handle module status change in local state
-  const handleStatusChange = (moduleKey, newStatus) => {
-    setModules((prev) => ({
-      ...prev,
+  // Handle module status change in local state & auto-save to server
+  const handleStatusChange = async (moduleKey, newStatus) => {
+    const updatedModules = {
+      ...modules,
       [moduleKey]: {
-        ...(prev[moduleKey] || {}),
+        ...(modules[moduleKey] || {}),
         status: newStatus
       }
-    }));
+    };
+    setModules(updatedModules);
+
+    // Auto-save immediately to server so cafe dashboards update without delay
+    try {
+      await updateSystemModules({ modules: updatedModules });
+      setModuleSavedToast(true);
+      setTimeout(() => setModuleSavedToast(false), 2500);
+    } catch (err) {
+      console.error('Failed to auto-save module status:', err);
+    }
   };
 
   // Handle module message change

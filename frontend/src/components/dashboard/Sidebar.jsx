@@ -164,8 +164,18 @@ const Sidebar = ({
 
               const handleNavClick = () => {
                 if (isInactive) {
-                  const statusLabel = mod.status === 'maintenance' ? 'Under Maintenance' : mod.status === 'soon' ? 'Coming Soon' : 'Disabled';
-                  alert(`[${item.label}] is currently ${statusLabel}.\n\n${mod.message || 'System features undergo scheduled enhancements. Backend services continue operating uninterrupted.'}`);
+                  const statusLabel =
+                    mod.status === 'maintenance'
+                      ? 'Under Scheduled Maintenance'
+                      : mod.status === 'soon'
+                      ? 'Coming Soon'
+                      : 'Temporarily Disabled';
+                  alert(
+                    `🔒 [${item.label}] is currently ${statusLabel}.\n\n${
+                      mod.message ||
+                      'This module has been paused by the platform administrator. Live orders, billing, and backend services continue running without interruption.'
+                    }`
+                  );
                   return;
                 }
                 onTabChange(item.id);
@@ -177,12 +187,12 @@ const Sidebar = ({
                   key={item.id}
                   data-tour={`nav-mobile-${item.id}`}
                   onClick={handleNavClick}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     active
-                      ? 'text-white bg-[#7C3AED]/20 border border-[#7C3AED]/40 shadow-sm font-semibold'
+                      ? 'text-white bg-[#7C3AED]/20 border border-[#7C3AED]/40 shadow-sm font-semibold cursor-pointer'
                       : isInactive
-                      ? 'text-[#64748B] hover:text-[#94A3B8] opacity-75'
-                      : 'text-[#A1A1B5] hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'text-[#64748B] hover:text-[#94A3B8] opacity-70 bg-white/[0.02] cursor-not-allowed border border-transparent'
+                      : 'text-[#A1A1B5] hover:text-white hover:bg-white/5 border border-transparent cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -197,14 +207,14 @@ const Sidebar = ({
                   <div className="flex items-center gap-1.5">
                     {/* Module Status Pill */}
                     {isInactive && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase border ${
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase border tracking-wider ${
                         mod.status === 'maintenance'
-                          ? 'bg-amber-500/15 text-amber-300 border-amber-500/25'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/35'
                           : mod.status === 'soon'
-                          ? 'bg-purple-500/15 text-purple-300 border-purple-500/25'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/35'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/35'
                       }`}>
-                        {mod.status === 'maintenance' ? 'Maint' : mod.status === 'soon' ? 'Soon' : 'Off'}
+                        {mod.status === 'maintenance' ? 'Maintenance' : mod.status === 'soon' ? 'Soon' : 'Disabled'}
                       </span>
                     )}
 
@@ -318,8 +328,18 @@ const Sidebar = ({
 
             const handleDesktopNavClick = () => {
               if (isInactive) {
-                const statusLabel = mod.status === 'maintenance' ? 'Under Maintenance' : mod.status === 'soon' ? 'Coming Soon' : 'Disabled';
-                alert(`[${item.label}] is currently ${statusLabel}.\n\n${mod.message || 'System features undergo scheduled enhancements. Backend services continue operating uninterrupted.'}`);
+                const statusLabel =
+                  mod.status === 'maintenance'
+                    ? 'Under Scheduled Maintenance'
+                    : mod.status === 'soon'
+                    ? 'Coming Soon'
+                    : 'Temporarily Disabled';
+                alert(
+                  `🔒 [${item.label}] is currently ${statusLabel}.\n\n${
+                    mod.message ||
+                    'This module has been paused by the platform administrator. Live orders, billing, and backend services continue running without interruption.'
+                  }`
+                );
                 return;
               }
               onTabChange(item.id);
@@ -331,15 +351,15 @@ const Sidebar = ({
                 data-tour={`nav-${item.id}`}
                 onClick={handleDesktopNavClick}
                 title={isCollapsed ? (isInactive ? `${item.label} (${mod.status})` : item.label) : undefined}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all relative group cursor-pointer ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all relative group ${
                   active
-                    ? 'text-white'
+                    ? 'text-white cursor-pointer'
                     : isInactive
-                    ? 'text-[#64748B] hover:text-[#94A3B8] opacity-75'
-                    : 'text-[#A1A1B5] hover:text-white hover:bg-[#1A1A2A]'
+                    ? 'text-[#64748B] hover:text-[#94A3B8] opacity-70 bg-white/[0.02] cursor-not-allowed'
+                    : 'text-[#A1A1B5] hover:text-white hover:bg-[#1A1A2A] cursor-pointer'
                 }`}
                 style={{
-                  backgroundColor: active ? 'rgba(124, 58, 237, 0.14)' : 'transparent',
+                  backgroundColor: active ? 'rgba(124, 58, 237, 0.14)' : isInactive ? 'rgba(255, 255, 255, 0.02)' : 'transparent',
                   border: active ? '1px solid rgba(124, 58, 237, 0.28)' : '1px solid transparent'
                 }}
               >
@@ -363,14 +383,14 @@ const Sidebar = ({
 
                 {/* Module Status Pill */}
                 {isInactive && !isCollapsed && (
-                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase border ${
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase border tracking-wider ${
                     mod.status === 'maintenance'
-                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/25'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/35'
                       : mod.status === 'soon'
-                      ? 'bg-purple-500/15 text-purple-300 border-purple-500/25'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/35'
+                      : 'bg-rose-500/20 text-rose-300 border-rose-500/35'
                   }`}>
-                    {mod.status === 'maintenance' ? 'Maint' : mod.status === 'soon' ? 'Soon' : 'Off'}
+                    {mod.status === 'maintenance' ? 'Maintenance' : mod.status === 'soon' ? 'Soon' : 'Disabled'}
                   </span>
                 )}
 
