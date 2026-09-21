@@ -138,12 +138,17 @@ class PaymentOrderService {
       amount: vendorRupees
     }];
 
+    const cafe = await Cafe.findById(restaurantId).lean();
+    const cafeName = cafe?.name || 'Cafe';
+    const orderNote = `Payment for ${cafeName} via Krixov`;
+
     let cfResponse;
     try {
       cfResponse = await this.provider.createPaymentOrder({
         orderId: providerOrderId,
         amount: amountRupees,
         currency: 'INR',
+        orderNote,
         customer: {
           id: customerDetails.id || `cust_${payment._id.toString().slice(-8)}`,
           name: customerDetails.name || 'Dine-in Customer',
@@ -169,6 +174,7 @@ class PaymentOrderService {
           orderId: providerOrderId,
           amount: amountRupees,
           currency: 'INR',
+          orderNote,
           customer: {
             id: customerDetails.id || `cust_${payment._id.toString().slice(-8)}`,
             name: customerDetails.name || 'Dine-in Customer',
@@ -182,37 +188,30 @@ class PaymentOrderService {
           splits: []
         });
       } else {
-        payment.status = 'FAILED';
-        payment.failure_reason = err.message;
-        await payment.save();
         throw err;
       }
     }
 
-    payment.cf_payment_session_id = cfResponse.paymentSessionId;
+    // 5. Update payment with provider order details
+    payment.cf_order_id = cfResponse.cfOrderId ? String(cfResponse.cfOrderId) : '';
+    payment.cf_payment_session_id = cfResponse.paymentSessionId || '';
     payment.status = 'PENDING';
     await payment.save();
 
     await PaymentAuditService.log({
-      actorType: 'USER',
-      actorId: customerDetails.id || 'CUSTOMER',
+      actorType: 'SYSTEM',
+      actorId: 'CHECKOUT_FLOW',
       restaurantId,
       action: 'PAYMENT_SESSION_CREATED',
       entityType: 'Payment',
       entityId: payment._id,
-      newState: payment.toObject(),
-      metadata: {
-        providerOrderId,
-        amountRupees,
-        vendorRupees,
-        vendorId: providerVendorId
-      }
+      newState: payment.toObject()
     });
 
     return {
       paymentId: payment._id,
-      providerOrderId,
-      paymentSessionId: cfResponse.paymentSessionId,
+      providerOrderId: payment.provider_order_id,
+      paymentSessionId: payment.cf_payment_session_id,
       amount: parseFloat(amountRupees),
       currency: 'INR',
       environment: this.provider.environment
@@ -229,6 +228,37 @@ class PaymentOrderService {
     }
 
     if (payment.status === 'SUCCESS') {
+      const normalizedMethod = payment.payment_method || 'online';
+      if (payment.session_id) {
+        await TableSession.findByIdAndUpdate(payment.session_id, {
+          $set: {
+            paymentStatus: 'paid',
+            paymentMethod: normalizedMethod,
+            settledAt: payment.paid_at || new Date(),
+            paidAt: payment.paid_at || new Date()
+          }
+        });
+        await TableOrder.updateMany(
+          { sessionId: payment.session_id },
+          {
+            $set: {
+              paymentStatus: 'paid',
+              paymentMethod: normalizedMethod,
+              paidAt: payment.paid_at || new Date()
+            }
+          }
+        );
+      }
+      if (payment.order_id) {
+        await TableOrder.findByIdAndUpdate(payment.order_id, {
+          $set: {
+            paymentStatus: 'paid',
+            paymentMethod: normalizedMethod,
+            paidAt: payment.paid_at || new Date()
+          }
+        });
+      }
+
       return {
         paymentId: payment._id,
         status: payment.status,
@@ -241,10 +271,17 @@ class PaymentOrderService {
 
     if (statusRes.isPaid || statusRes.successfulPayment) {
       const successfulPayment = statusRes.successfulPayment || {};
+      const rawMethod = (successfulPayment.payment_group || payment.payment_method || 'online').toLowerCase();
+      let normalizedMethod = 'online';
+      if (rawMethod.includes('upi')) normalizedMethod = 'upi';
+      else if (rawMethod.includes('card') || rawMethod.includes('cc') || rawMethod.includes('dc')) normalizedMethod = 'card';
+      else if (rawMethod.includes('cash')) normalizedMethod = 'cash';
+      else normalizedMethod = 'online';
+
       payment.status = 'SUCCESS';
       payment.verification_status = 'PROVIDER_CONFIRMED';
       payment.provider_payment_id = successfulPayment.payment_id || `cf_pay_${Date.now()}`;
-      payment.payment_method = successfulPayment.payment_group || 'online';
+      payment.payment_method = normalizedMethod;
       payment.paid_at = new Date(successfulPayment.payment_time || Date.now());
       await payment.save();
 
@@ -262,23 +299,51 @@ class PaymentOrderService {
 
       // Update associated order or session
       if (payment.order_id) {
-        await TableOrder.findByIdAndUpdate(payment.order_id, {
+        const updatedOrder = await TableOrder.findByIdAndUpdate(payment.order_id, {
           $set: {
             paymentStatus: 'paid',
-            paymentMethod: payment.payment_method || 'online',
+            paymentMethod: normalizedMethod,
             paidAt: payment.paid_at
           }
-        });
+        }, { new: true });
+
+        if (updatedOrder?.sessionId) {
+          const sessionOrders = await TableOrder.find({ sessionId: updatedOrder.sessionId });
+          const allPaid = sessionOrders.every(o => o.paymentStatus === 'paid');
+          if (allPaid) {
+            await TableSession.findByIdAndUpdate(updatedOrder.sessionId, {
+              $set: {
+                paymentStatus: 'paid',
+                paymentMethod: normalizedMethod,
+                settledAt: payment.paid_at,
+                paidAt: payment.paid_at
+              }
+            });
+          }
+        }
       }
 
       if (payment.session_id) {
         await TableSession.findByIdAndUpdate(payment.session_id, {
           $set: {
             paymentStatus: 'paid',
-            paymentMethod: payment.payment_method || 'online',
-            settledAt: payment.paid_at
+            paymentMethod: normalizedMethod,
+            settledAt: payment.paid_at,
+            paidAt: payment.paid_at
           }
         });
+
+        // CRITICAL: Update ALL TableOrders belonging to this table session to paid!
+        await TableOrder.updateMany(
+          { sessionId: payment.session_id },
+          {
+            $set: {
+              paymentStatus: 'paid',
+              paymentMethod: normalizedMethod,
+              paidAt: payment.paid_at
+            }
+          }
+        );
       }
 
       await PaymentAuditService.log({

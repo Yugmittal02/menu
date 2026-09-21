@@ -35,9 +35,11 @@ import {
   FiArrowRight,
   FiHeadphones,
   FiCreditCard,
+  FiSliders,
 } from 'react-icons/fi';
 import SuperAdminSupportTab from '../components/admin/SuperAdminSupportTab';
 import SuperAdminPaymentsTab from '../components/admin/SuperAdminPaymentsTab';
+import SuperAdminSystemTab from '../components/admin/SuperAdminSystemTab';
 import KrixovBrandMark from '../components/brand/KrixovBrandMark';
 import PoweredByKrixov from '../components/brand/PoweredByKrixov';
 
@@ -273,6 +275,16 @@ const SuperAdminDashboard = ({ initialTab }) => {
             }`}
           >
             <FiCreditCard /> Payments Center
+          </button>
+          <button
+            onClick={() => setActiveTab('system')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer shrink-0 ${
+              activeTab === 'system'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <FiSliders /> System & Notices
           </button>
         </div>
 
@@ -610,6 +622,13 @@ const SuperAdminDashboard = ({ initialTab }) => {
         {activeTab === 'payments' && (
           <div className="animate-in fade-in duration-200">
             <SuperAdminPaymentsTab />
+          </div>
+        )}
+
+        {/* TAB 5: SYSTEM & NOTICES */}
+        {activeTab === 'system' && (
+          <div className="animate-in fade-in duration-200">
+            <SuperAdminSystemTab />
           </div>
         )}
 

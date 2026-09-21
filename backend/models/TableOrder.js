@@ -32,7 +32,7 @@ const tableOrderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['cash', 'upi', 'card', 'other', ''],
+    enum: ['cash', 'upi', 'card', 'online', 'other', ''],
     default: ''
   },
   paidAt: { type: Date, default: null },

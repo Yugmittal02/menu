@@ -588,7 +588,7 @@ const OrdersTab = ({
                     <div>
                       {order.paymentStatus === 'paid' ? (
                         <span className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl font-bold text-[#10B981] bg-[#10B981]/12 border border-[#10B981]/25">
-                          ✅ Paid via {order.paymentMethod || 'cash'}
+                          ✅ Paid via {order.paymentMethod ? (order.paymentMethod.toLowerCase() === 'upi' ? 'UPI' : order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1)) : 'Online'}
                         </span>
                       ) : payingOrderId === order._id ? (
                         <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#151523] border border-white/[0.08]">

@@ -213,11 +213,12 @@ class CashfreePaymentProvider extends PaymentProvider {
   /**
    * Create an Easy Split payment order
    */
-  async createPaymentOrder({ orderId, amount, currency = 'INR', customer, orderMeta = {}, splits = [] }) {
+  async createPaymentOrder({ orderId, amount, currency = 'INR', customer, orderNote, orderMeta = {}, splits = [] }) {
     const payload = {
       order_id: orderId,
       order_amount: Number(amount), // in rupees (float/number)
       order_currency: currency,
+      order_note: orderNote || 'QR Table Bill via Krixov',
       customer_details: {
         customer_id: customer.id || `cust_${orderId.slice(-8)}`,
         customer_phone: customer.phone || '9999999999',

@@ -45,7 +45,9 @@ import {
   updateItemStock,
   toggle86Item,
   bulkRestockInventory,
-  addInventoryItem
+  addInventoryItem,
+  getSystemModules,
+  getCafeNotices
 } from '../services/api';
 
 import DashboardShell from '../components/dashboard/DashboardShell';
@@ -68,6 +70,8 @@ import BillingDrawer from '../components/dashboard/ui/BillingDrawer';
 import KOTView from '../components/dashboard/ui/KOTView';
 import InvoiceView from '../components/dashboard/ui/InvoiceView';
 import StaffPinModal from '../components/dashboard/ui/StaffPinModal';
+import CafeNoticeModal from '../components/dashboard/modals/CafeNoticeModal';
+import NoticeDrawer from '../components/dashboard/modals/NoticeDrawer';
 import { playOrderChime, playBuzzer } from '../components/dashboard/ui/AudioAlerts';
 
 // Onboarding & Interactive Tour Components
@@ -111,6 +115,9 @@ const OnboardingConsumerLayer = ({
   refreshToast,
   menu,
   onRefreshData,
+  systemModules,
+  noticesCount,
+  onOpenNoticeDrawer,
   children
 }) => {
   const {
@@ -150,6 +157,9 @@ const OnboardingConsumerLayer = ({
       onLogout={onLogout}
       onHelpClick={() => setIsHelpModalOpen(true)}
       refreshToast={refreshToast}
+      systemModules={systemModules}
+      noticesCount={noticesCount}
+      onOpenNoticeDrawer={onOpenNoticeDrawer}
     >
       {/* Onboarding Welcome Banner above tab content */}
       <WelcomeBanner onOpenQuickGuide={() => setIsHelpModalOpen(true)} />
@@ -203,6 +213,12 @@ const CafeDashboard = () => {
       return null;
     }
   });
+
+  // System Modules & Broadcast Notices State
+  const [systemModules, setSystemModules] = useState({});
+  const [notices, setNotices] = useState([]);
+  const [activePopupNotice, setActivePopupNotice] = useState(null);
+  const [isNoticeDrawerOpen, setIsNoticeDrawerOpen] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [inventoryData, setInventoryData] = useState({ summary: {}, items: [] });
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
@@ -274,7 +290,9 @@ const CafeDashboard = () => {
         resRes,
         staffRes,
         custRes,
-        invRes
+        invRes,
+        systemRes,
+        noticesRes
       ] = await Promise.allSettled([
         getMyCafe(),
         getMyMenu(),
@@ -285,7 +303,9 @@ const CafeDashboard = () => {
         getReservations(),
         getStaff(),
         getCustomers(),
-        getInventory()
+        getInventory(),
+        getSystemModules(),
+        getCafeNotices()
       ]);
 
       if (cafeRes.status === 'fulfilled' && cafeRes.value?.data) {
@@ -317,6 +337,23 @@ const CafeDashboard = () => {
       }
       if (invRes.status === 'fulfilled' && invRes.value?.data) {
         setInventoryData(invRes.value.data);
+      }
+      if (systemRes.status === 'fulfilled' && systemRes.value?.data?.modules) {
+        setSystemModules(systemRes.value.data.modules);
+      }
+      if (noticesRes.status === 'fulfilled' && noticesRes.value?.data?.notices) {
+        const fetchedNotices = noticesRes.value.data.notices;
+        setNotices(fetchedNotices);
+
+        let dismissed = [];
+        try {
+          dismissed = JSON.parse(localStorage.getItem('dismissed_notices') || '[]');
+        } catch { }
+
+        const popup = fetchedNotices.find((n) => n.isPopup && n.active && !dismissed.includes(n._id));
+        if (popup) {
+          setActivePopupNotice(popup);
+        }
       }
 
       const nowFormatted = new Date().toLocaleTimeString([], {
@@ -1106,6 +1143,32 @@ const CafeDashboard = () => {
         onPinSubmit={handleStaffPinSubmit}
         activeStaff={activeStaff}
         onLogoutStaff={handleLogoutStaff}
+      />
+
+      {/* CAFE NOTICE POP-UP MODAL */}
+      {activePopupNotice && (
+        <CafeNoticeModal
+          notice={activePopupNotice}
+          onClose={() => {
+            if (activePopupNotice?._id) {
+              try {
+                const dismissed = JSON.parse(localStorage.getItem('dismissed_notices') || '[]');
+                if (!dismissed.includes(activePopupNotice._id)) {
+                  dismissed.push(activePopupNotice._id);
+                  localStorage.setItem('dismissed_notices', JSON.stringify(dismissed));
+                }
+              } catch { }
+            }
+            setActivePopupNotice(null);
+          }}
+        />
+      )}
+
+      {/* CAFE NOTICE BOARD DRAWER */}
+      <NoticeDrawer
+        isOpen={isNoticeDrawerOpen}
+        onClose={() => setIsNoticeDrawerOpen(false)}
+        notices={notices}
       />
       </OnboardingConsumerLayer>
     </OnboardingProvider>

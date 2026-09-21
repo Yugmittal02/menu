@@ -22,18 +22,18 @@ import {
 
 const NAV_ITEMS = [
   { id: 'Overview', label: 'Overview', icon: LuLayoutDashboard },
-  { id: 'Orders', label: 'Orders', icon: LuShoppingBag, badgeKey: 'orders' },
+  { id: 'Orders', label: 'Orders', icon: LuShoppingBag, badgeKey: 'orders', moduleKey: 'kot' },
   { id: 'POS', label: 'POS Billing', icon: LuMonitor },
   { id: 'Tables', label: 'Tables', icon: LuLayoutGrid, badgeKey: 'activeTables' },
-  { id: 'Reservations', label: 'Reservations', icon: LuCalendar, badgeKey: 'reservations' },
+  { id: 'Reservations', label: 'Reservations', icon: LuCalendar, badgeKey: 'reservations', moduleKey: 'reservations' },
   { id: 'Menu', label: 'Menu', icon: LuUtensils, badgeKey: 'menu' },
-  { id: 'Inventory', label: 'Inventory', icon: LuBoxes, badgeKey: 'inventoryAlerts' },
-  { id: 'CRM', label: 'Customer CRM', icon: LuUsers },
+  { id: 'Inventory', label: 'Inventory', icon: LuBoxes, badgeKey: 'inventoryAlerts', moduleKey: 'inventory' },
+  { id: 'CRM', label: 'Customer CRM', icon: LuUsers, moduleKey: 'crm' },
   { id: 'Staff', label: 'Staff & Roles', icon: LuUserCheck },
-  { id: 'Coupons', label: 'Coupons', icon: LuTicket, badgeKey: 'coupons' },
+  { id: 'Coupons', label: 'Coupons', icon: LuTicket, badgeKey: 'coupons', moduleKey: 'coupons' },
   { id: 'QR', label: 'QR Codes', icon: LuQrCode },
   { id: 'Analytics', label: 'Analytics', icon: LuChartColumn },
-  { id: 'Payments', label: 'Payments', icon: LuCreditCard },
+  { id: 'Payments', label: 'Payments', icon: LuCreditCard, moduleKey: 'payments' },
   { id: 'Settings', label: 'Settings', icon: LuSettings },
   { id: 'Support', label: 'Help & Support', icon: LuLifeBuoy }
 ];
@@ -52,7 +52,8 @@ const Sidebar = ({
   isMobileOpen = false,
   onCloseMobile,
   activeStaff = null,
-  onOpenPinModal
+  onOpenPinModal,
+  systemModules = {}
 }) => {
   // Close mobile drawer on Escape key
   React.useEffect(() => {
@@ -152,24 +153,35 @@ const Sidebar = ({
             </div>
           ) : null}
 
-          {/* All Navigation Links */}
+          {/* Navigation Links */}
           <nav className="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = activeTab === item.id;
               const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
+              const mod = item.moduleKey ? systemModules[item.moduleKey] : null;
+              const isInactive = mod && mod.status && mod.status !== 'active';
+
+              const handleNavClick = () => {
+                if (isInactive) {
+                  const statusLabel = mod.status === 'maintenance' ? 'Under Maintenance' : mod.status === 'soon' ? 'Coming Soon' : 'Disabled';
+                  alert(`[${item.label}] is currently ${statusLabel}.\n\n${mod.message || 'System features undergo scheduled enhancements. Backend services continue operating uninterrupted.'}`);
+                  return;
+                }
+                onTabChange(item.id);
+                onCloseMobile?.();
+              };
 
               return (
                 <button
                   key={item.id}
                   data-tour={`nav-mobile-${item.id}`}
-                  onClick={() => {
-                    onTabChange(item.id);
-                    onCloseMobile?.();
-                  }}
+                  onClick={handleNavClick}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                     active
                       ? 'text-white bg-[#7C3AED]/20 border border-[#7C3AED]/40 shadow-sm font-semibold'
+                      : isInactive
+                      ? 'text-[#64748B] hover:text-[#94A3B8] opacity-75'
                       : 'text-[#A1A1B5] hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
                 >
@@ -177,23 +189,38 @@ const Sidebar = ({
                     <Icon
                       size={19}
                       className="flex-shrink-0"
-                      style={{ color: active ? '#A78BFA' : '#94A3B8' }}
+                      style={{ color: active ? '#A78BFA' : isInactive ? '#475569' : '#94A3B8' }}
                     />
                     <span className="truncate">{item.label}</span>
                   </div>
 
-                  {/* Badge Counter */}
-                  {badgeCount > 0 && (
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full font-mono ${
-                        item.id === 'Orders'
-                          ? 'bg-[#EF4444] text-white shadow-sm animate-pulse'
-                          : 'bg-[#7C3AED]/30 text-[#A78BFA]'
-                      }`}
-                    >
-                      {badgeCount}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {/* Module Status Pill */}
+                    {isInactive && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase border ${
+                        mod.status === 'maintenance'
+                          ? 'bg-amber-500/15 text-amber-300 border-amber-500/25'
+                          : mod.status === 'soon'
+                          ? 'bg-purple-500/15 text-purple-300 border-purple-500/25'
+                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}>
+                        {mod.status === 'maintenance' ? 'Maint' : mod.status === 'soon' ? 'Soon' : 'Off'}
+                      </span>
+                    )}
+
+                    {/* Badge Counter */}
+                    {badgeCount > 0 && (
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full font-mono ${
+                          item.id === 'Orders'
+                            ? 'bg-[#EF4444] text-white shadow-sm animate-pulse'
+                            : 'bg-[#7C3AED]/30 text-[#A78BFA]'
+                        }`}
+                      >
+                        {badgeCount}
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -286,16 +313,29 @@ const Sidebar = ({
             const Icon = item.icon;
             const active = activeTab === item.id;
             const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
+            const mod = item.moduleKey ? systemModules[item.moduleKey] : null;
+            const isInactive = mod && mod.status && mod.status !== 'active';
+
+            const handleDesktopNavClick = () => {
+              if (isInactive) {
+                const statusLabel = mod.status === 'maintenance' ? 'Under Maintenance' : mod.status === 'soon' ? 'Coming Soon' : 'Disabled';
+                alert(`[${item.label}] is currently ${statusLabel}.\n\n${mod.message || 'System features undergo scheduled enhancements. Backend services continue operating uninterrupted.'}`);
+                return;
+              }
+              onTabChange(item.id);
+            };
 
             return (
               <button
                 key={item.id}
                 data-tour={`nav-${item.id}`}
-                onClick={() => onTabChange(item.id)}
-                title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all relative group ${
+                onClick={handleDesktopNavClick}
+                title={isCollapsed ? (isInactive ? `${item.label} (${mod.status})` : item.label) : undefined}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all relative group cursor-pointer ${
                   active
                     ? 'text-white'
+                    : isInactive
+                    ? 'text-[#64748B] hover:text-[#94A3B8] opacity-75'
                     : 'text-[#A1A1B5] hover:text-white hover:bg-[#1A1A2A]'
                 }`}
                 style={{
@@ -314,11 +354,24 @@ const Sidebar = ({
                 <Icon
                   size={18}
                   className="flex-shrink-0 transition-colors"
-                  style={{ color: active ? '#A78BFA' : 'inherit' }}
+                  style={{ color: active ? '#A78BFA' : isInactive ? '#475569' : 'inherit' }}
                 />
 
                 {!isCollapsed && (
                   <span className="truncate flex-1 text-left">{item.label}</span>
+                )}
+
+                {/* Module Status Pill */}
+                {isInactive && !isCollapsed && (
+                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase border ${
+                    mod.status === 'maintenance'
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/25'
+                      : mod.status === 'soon'
+                      ? 'bg-purple-500/15 text-purple-300 border-purple-500/25'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}>
+                    {mod.status === 'maintenance' ? 'Maint' : mod.status === 'soon' ? 'Soon' : 'Off'}
+                  </span>
                 )}
 
                 {/* Badge Counter */}

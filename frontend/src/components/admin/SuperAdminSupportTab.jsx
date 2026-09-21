@@ -274,7 +274,7 @@ export default function SuperAdminSupportTab() {
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Resolved Today</span>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-black text-emerald-400">{stats?.resolvedToday ?? '-'}</span>
-            <LuCheckCircle2 className="text-emerald-400/60" size={18} />
+            <LuCircleCheck className="text-emerald-400/60" size={18} />
           </div>
         </div>
 

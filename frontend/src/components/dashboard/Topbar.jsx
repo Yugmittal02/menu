@@ -7,7 +7,7 @@ import {
   FiSun,
   FiMoon
 } from 'react-icons/fi';
-import { LuLock, LuUserCheck } from 'react-icons/lu';
+import { LuLock, LuUserCheck, LuBell } from 'react-icons/lu';
 
 const Topbar = ({
   activeTab,
@@ -22,7 +22,9 @@ const Topbar = ({
   onMobileMenuOpen,
   activeStaff = null,
   onOpenPinModal,
-  onOpenHelpTour
+  onOpenHelpTour,
+  noticesCount = 0,
+  onOpenNoticeDrawer
 }) => {
   return (
     <header
@@ -152,6 +154,21 @@ const Topbar = ({
         >
           <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
           <span className="hidden xs:inline">Tour Guide</span>
+        </button>
+
+        {/* Notice Board Bell Button */}
+        <button
+          onClick={onOpenNoticeDrawer}
+          className="relative h-9 w-9 flex items-center justify-center rounded-xl text-[#CBD5E1] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-colors cursor-pointer"
+          title="Notice Board & Announcements"
+          aria-label="Notice Board & Announcements"
+        >
+          <LuBell size={17} className={noticesCount > 0 ? "text-amber-400" : "text-[#CBD5E1]"} />
+          {noticesCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-black font-extrabold text-[9px] flex items-center justify-center shadow-md animate-pulse">
+              {noticesCount}
+            </span>
+          )}
         </button>
 
         {/* Cafe Profile Chip */}

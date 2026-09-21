@@ -255,6 +255,8 @@ app.use("/api/support", require("./routes/support"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/webhooks", require("./routes/webhooks"));
 app.use("/api/admin/payments", require("./routes/adminPayments"));
+app.use("/api/system", require("./routes/system"));
+app.use("/api/notices", require("./routes/notices"));
 
 // Health check
 app.get("/", (req, res) => {

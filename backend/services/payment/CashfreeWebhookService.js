@@ -193,25 +193,60 @@ class CashfreeWebhookService {
       krixovAmountMinor: split.krixovAmountMinor
     });
 
+    const rawMethod = (paymentMethod || 'online').toLowerCase();
+    let normalizedMethod = 'online';
+    if (rawMethod.includes('upi')) normalizedMethod = 'upi';
+    else if (rawMethod.includes('card') || rawMethod.includes('cc') || rawMethod.includes('dc')) normalizedMethod = 'card';
+    else if (rawMethod.includes('cash')) normalizedMethod = 'cash';
+    else normalizedMethod = 'online';
+
     // Update TableOrder or TableSession
     if (payment.order_id) {
-      await TableOrder.findByIdAndUpdate(payment.order_id, {
+      const updatedOrder = await TableOrder.findByIdAndUpdate(payment.order_id, {
         $set: {
           paymentStatus: 'paid',
-          paymentMethod,
+          paymentMethod: normalizedMethod,
           paidAt: paymentTime
         }
-      });
+      }, { new: true });
+
+      if (updatedOrder?.sessionId) {
+        const sessionOrders = await TableOrder.find({ sessionId: updatedOrder.sessionId });
+        const allPaid = sessionOrders.every(o => o.paymentStatus === 'paid');
+        if (allPaid) {
+          await TableSession.findByIdAndUpdate(updatedOrder.sessionId, {
+            $set: {
+              paymentStatus: 'paid',
+              paymentMethod: normalizedMethod,
+              settledAt: paymentTime,
+              paidAt: paymentTime
+            }
+          });
+        }
+      }
     }
 
     if (payment.session_id) {
       await TableSession.findByIdAndUpdate(payment.session_id, {
         $set: {
           paymentStatus: 'paid',
-          paymentMethod,
-          settledAt: paymentTime
+          paymentMethod: normalizedMethod,
+          settledAt: paymentTime,
+          paidAt: paymentTime
         }
       });
+
+      // Cascade to all TableOrders in the session
+      await TableOrder.updateMany(
+        { sessionId: payment.session_id },
+        {
+          $set: {
+            paymentStatus: 'paid',
+            paymentMethod: normalizedMethod,
+            paidAt: paymentTime
+          }
+        }
+      );
     }
 
     // Audit log

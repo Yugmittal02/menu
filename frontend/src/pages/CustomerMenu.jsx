@@ -760,6 +760,9 @@ export default function CustomerMenu() {
         cafe={cafe}
         currency={cafe?.currency || '₹'}
         onClose={() => setIsBillOpen(false)}
+        onPaymentSuccess={() => {
+          handleRefreshSession();
+        }}
       />
     </div>
   );

@@ -20,6 +20,9 @@ const DashboardShell = ({
   activeStaff = null,
   onOpenPinModal,
   refreshToast = null,
+  systemModules = {},
+  noticesCount = 0,
+  onOpenNoticeDrawer,
   children
 }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -52,6 +55,7 @@ const DashboardShell = ({
         onCloseMobile={() => setIsMobileDrawerOpen(false)}
         activeStaff={activeStaff}
         onOpenPinModal={onOpenPinModal}
+        systemModules={systemModules}
       />
 
       {/* Main Content Area */}
@@ -71,6 +75,8 @@ const DashboardShell = ({
           onOpenPinModal={onOpenPinModal}
           onOpenHelpTour={onHelpClick}
           onMobileMenuOpen={() => setIsMobileDrawerOpen(true)}
+          noticesCount={noticesCount}
+          onOpenNoticeDrawer={onOpenNoticeDrawer}
         />
 
         {/* Scrollable Page Viewport */}
