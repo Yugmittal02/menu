@@ -515,13 +515,21 @@ exports.resolveSession = async (req, res) => {
 exports.getCustomerSession = async (req, res) => {
   const sessionId = req.params.sessionId;
   try {
-    if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(sessionId)) {
-      const session = await TableSession.findById(sessionId).populate({
-        path: 'orders',
-        select: 'orderNumber items subtotal discount taxAmount grandTotal status paymentStatus createdAt'
-      });
-      if (!session) return res.status(404).json({ message: 'Session not found' });
-      return res.json(session);
+    if (mongoose.connection.readyState === 1) {
+      let session = null;
+      if (mongoose.Types.ObjectId.isValid(sessionId)) {
+        session = await TableSession.findById(sessionId).populate({
+          path: 'orders',
+          select: 'orderNumber items subtotal discount taxAmount grandTotal status paymentStatus createdAt'
+        });
+      }
+      if (!session) {
+        session = await TableSession.findOne({ sessionCode: sessionId }).populate({
+          path: 'orders',
+          select: 'orderNumber items subtotal discount taxAmount grandTotal status paymentStatus createdAt'
+        });
+      }
+      if (session) return res.json(session);
     }
 
     const session = offlineStore.getSessionById(sessionId);
