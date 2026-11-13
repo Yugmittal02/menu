@@ -30,8 +30,8 @@ const DashboardShell = ({
 
   return (
     <div
-      className="min-h-screen flex flex-col md:flex-row text-[#F8FAFC]"
-      style={{ backgroundColor: '#0B0B14' }}
+      className="min-h-screen flex flex-col md:flex-row transition-colors duration-300"
+      style={{ backgroundColor: 'var(--dash-bg)', color: 'var(--dash-text)' }}
     >
       {/* Global Refresh Floating Toast Notification */}
       {refreshToast && (
@@ -56,6 +56,7 @@ const DashboardShell = ({
         activeStaff={activeStaff}
         onOpenPinModal={onOpenPinModal}
         systemModules={systemModules}
+        isDark={isDark}
       />
 
       {/* Main Content Area */}
@@ -80,7 +81,7 @@ const DashboardShell = ({
         />
 
         {/* Scrollable Page Viewport */}
-        <main className="flex-1 px-3.5 py-4 sm:px-5 sm:py-5 md:px-7 md:py-6 pb-24 md:pb-8 w-full max-w-[1600px] mx-auto">
+        <main className="dashboard-content flex-1 px-3.5 py-4 sm:px-5 sm:py-5 md:px-7 md:py-6 pb-24 md:pb-8 w-full max-w-[1600px] mx-auto">
           {children}
         </main>
       </div>
@@ -90,6 +91,7 @@ const DashboardShell = ({
         activeTab={activeTab}
         onTabChange={onTabChange}
         badges={badges}
+        isDark={isDark}
       />
     </div>
   );

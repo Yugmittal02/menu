@@ -16,15 +16,16 @@ const PRIMARY_MOBILE_ITEMS = [
 const MobileBottomNav = ({
   activeTab,
   onTabChange,
-  badges = {}
+  badges = {},
+  isDark = true
 }) => {
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 border-t px-1 grid grid-cols-4 items-center"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 px-1 grid grid-cols-4 items-center transition-colors duration-300"
       style={{
-        backgroundColor: '#11111D',
-        borderColor: 'rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)'
+        backgroundColor: 'var(--dash-surface)',
+        borderTop: '1px solid var(--dash-border)',
+        boxShadow: 'var(--dash-shadow)'
       }}
     >
       {PRIMARY_MOBILE_ITEMS.map((item) => {
@@ -36,9 +37,11 @@ const MobileBottomNav = ({
           <button
             key={item.id}
             onClick={() => onTabChange(item.id)}
-            className={`flex flex-col items-center justify-center h-full py-1 text-[11px] font-medium transition-all relative select-none cursor-pointer ${
-              active ? 'text-white font-semibold' : 'text-[#94A3B8] hover:text-white'
-            }`}
+            className="flex flex-col items-center justify-center h-full py-1 text-[11px] font-medium transition-all relative select-none cursor-pointer"
+            style={{
+              color: active ? 'var(--dash-text)' : 'var(--dash-text-muted)',
+              fontWeight: active ? 600 : 500
+            }}
             aria-label={item.label}
           >
             <div className="relative flex items-center justify-center">
@@ -71,4 +74,3 @@ const MobileBottomNav = ({
 };
 
 export default MobileBottomNav;
-

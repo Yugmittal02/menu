@@ -462,6 +462,28 @@ const CafeDashboard = () => {
     localStorage.setItem('adminTheme', next);
   };
 
+  // Apply theme data-attribute to document root for CSS variable switching
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', adminTheme);
+    return () => document.documentElement.removeAttribute('data-theme');
+  }, [adminTheme]);
+
+  // Hide disabled modules: If active tab belongs to a module disabled/soon by admin, reset to Overview
+  useEffect(() => {
+    if (!systemModules || Object.keys(systemModules).length === 0) return;
+    const tabModuleMap = {
+      Reservations: 'reservations',
+      Inventory: 'inventory',
+      CRM: 'crm',
+      Coupons: 'coupons',
+      Payments: 'payments'
+    };
+    const modKey = tabModuleMap[activeTab];
+    if (modKey && systemModules[modKey] && systemModules[modKey].status !== 'active') {
+      setActiveTab('Overview');
+    }
+  }, [activeTab, systemModules]);
+
   // Order workflow handlers
   const handleStatusUpdate = async (orderId, status) => {
     // Optimistic UI update
@@ -846,13 +868,13 @@ const CafeDashboard = () => {
   // Initial loading skeleton
   if (loading) {
     return (
-      <div className="min-h-screen flex" style={{ backgroundColor: '#0B0B14' }}>
+      <div className="min-h-screen flex" style={{ backgroundColor: 'var(--dash-bg, #0B0B14)' }}>
         {/* Skeleton Sidebar */}
         <div
-          className="hidden md:block w-60 h-screen p-4 border-r space-y-4"
+          className="hidden md:block w-60 h-screen p-4 space-y-4"
           style={{
-            backgroundColor: '#11111D',
-            borderColor: 'rgba(255, 255, 255, 0.07)'
+            backgroundColor: 'var(--dash-surface, #11111D)',
+            borderRight: '1px solid var(--dash-border, rgba(255, 255, 255, 0.07))'
           }}
         >
           <div className="skeleton h-10 rounded-xl" />
@@ -1003,7 +1025,7 @@ const CafeDashboard = () => {
       )}
 
       {/* RESERVATIONS TAB */}
-      {activeTab === 'Reservations' && (
+      {activeTab === 'Reservations' && (!systemModules?.reservations || systemModules.reservations.status === 'active') && (
         <ReservationsTab
           reservations={reservations}
           cafe={cafe}
@@ -1027,7 +1049,7 @@ const CafeDashboard = () => {
       )}
 
       {/* INVENTORY TAB */}
-      {activeTab === 'Inventory' && (
+      {activeTab === 'Inventory' && (!systemModules?.inventory || systemModules.inventory.status === 'active') && (
         <InventoryTab
           inventoryData={inventoryData}
           cafe={cafe}
@@ -1042,7 +1064,7 @@ const CafeDashboard = () => {
       )}
 
       {/* CUSTOMER CRM TAB */}
-      {activeTab === 'CRM' && (
+      {activeTab === 'CRM' && (!systemModules?.crm || systemModules.crm.status === 'active') && (
         <CRMTab
           customers={customers}
           cafe={cafe}
@@ -1064,7 +1086,7 @@ const CafeDashboard = () => {
       )}
 
       {/* COUPONS TAB */}
-      {activeTab === 'Coupons' && (
+      {activeTab === 'Coupons' && (!systemModules?.coupons || systemModules.coupons.status === 'active') && (
         <CouponsTab
           coupons={coupons}
           onCreateCoupon={handleCreateCoupon}
@@ -1092,7 +1114,7 @@ const CafeDashboard = () => {
       )}
 
       {/* PAYMENTS TAB */}
-      {activeTab === 'Payments' && (
+      {activeTab === 'Payments' && (!systemModules?.payments || systemModules.payments.status === 'active') && (
         <PaymentSettingsTab
           cafe={cafe}
           onRefreshCafe={loadData}

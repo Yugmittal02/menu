@@ -32,19 +32,248 @@
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* ===== DASHBOARD THEME SYSTEM (Dark / Light) ===== */
+:root,
+[data-theme="dark"] {
+  --dash-bg: #0B0B14;
+  --dash-surface: #11111D;
+  --dash-surface-secondary: #151523;
+  --dash-surface-hover: #1A1A2A;
+  --dash-border: rgba(255, 255, 255, 0.07);
+  --dash-border-light: rgba(255, 255, 255, 0.12);
+  --dash-text: #F8FAFC;
+  --dash-text-secondary: #A1A1B5;
+  --dash-text-muted: #707089;
+  --dash-text-muted2: #8E8EA8;
+  --dash-glass: rgba(17, 17, 29, 0.92);
+  --dash-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  --dash-card-badge-bg: rgba(124, 58, 237, 0.20);
+  --dash-card-badge-text: #A78BFA;
+  --dash-inactive-text: #64748B;
+  --dash-inactive-hover: #94A3B8;
+  --dash-inactive-bg: rgba(255, 255, 255, 0.02);
+  --dash-icon-color: #94A3B8;
+  --dash-topbar-icon: #CBD5E1;
+  --dash-logout-text: #EF4444;
+  --dash-scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --dash-input-bg: rgba(255, 255, 255, 0.03);
+  --dash-input-border: rgba(124, 58, 237, 0.15);
+}
+
+[data-theme="light"] {
+  --dash-bg: #F5F7FA;
+  --dash-surface: #FFFFFF;
+  --dash-surface-secondary: #F0F2F5;
+  --dash-surface-hover: #E8EBF0;
+  --dash-border: rgba(0, 0, 0, 0.08);
+  --dash-border-light: rgba(0, 0, 0, 0.12);
+  --dash-text: #1A1A2E;
+  --dash-text-secondary: #6B7280;
+  --dash-text-muted: #9CA3AF;
+  --dash-text-muted2: #6B7280;
+  --dash-glass: rgba(255, 255, 255, 0.95);
+  --dash-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  --dash-card-badge-bg: rgba(124, 58, 237, 0.10);
+  --dash-card-badge-text: #7C3AED;
+  --dash-inactive-text: #9CA3AF;
+  --dash-inactive-hover: #6B7280;
+  --dash-inactive-bg: rgba(0, 0, 0, 0.03);
+  --dash-icon-color: #6B7280;
+  --dash-topbar-icon: #4B5563;
+  --dash-logout-text: #EF4444;
+  --dash-scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --dash-input-bg: rgba(0, 0, 0, 0.03);
+  --dash-input-border: rgba(124, 58, 237, 0.20);
+}
+
+/* ===== GLOBAL THEME OVERRIDES FOR DASHBOARD & MODALS ===== */
+/* These override hardcoded inline styles and Tailwind classes when data-theme="light" */
+
+/* --- 1. Surface Backgrounds (All dark shades map to light surface) --- */
+[data-theme="light"] .dashboard-content [style*="background"][style*="#11111D"],
+[data-theme="light"] .dashboard-content [style*="background"][style*="#151523"],
+[data-theme="light"] .dashboard-content [style*="background"][style*="#0B0B14"],
+[data-theme="light"] .dashboard-content [style*="background"][style*="#0b0b14"],
+[data-theme="light"] [role="dialog"] [style*="background"][style*="#11111D"],
+[data-theme="light"] [role="dialog"] [style*="background"][style*="#151523"] {
+  background-color: var(--dash-surface) !important;
+}
+
+/* --- Tailwind Dark Background Classes --- */
+[data-theme="light"] .bg-\[\#11111D\],
+[data-theme="light"] .bg-\[\#151523\],
+[data-theme="light"] .bg-\[\#0B0B14\],
+[data-theme="light"] .bg-\[\#0b0b14\],
+[data-theme="light"] .bg-\[\#0f0f1b\],
+[data-theme="light"] .bg-\[\#0F0F1D\],
+[data-theme="light"] .bg-\[\#12121e\],
+[data-theme="light"] .bg-\[\#121222\],
+[data-theme="light"] .bg-\[\#121224\],
+[data-theme="light"] .bg-\[\#121226\],
+[data-theme="light"] .bg-\[\#131322\],
+[data-theme="light"] .bg-\[\#141428\],
+[data-theme="light"] .bg-\[\#151525\],
+[data-theme="light"] .bg-\[\#15152A\],
+[data-theme="light"] .bg-\[\#16162E\],
+[data-theme="light"] .bg-\[\#171727\],
+[data-theme="light"] .bg-\[\#17172E\],
+[data-theme="light"] .bg-\[\#171730\],
+[data-theme="light"] .bg-\[\#1A1A30\],
+[data-theme="light"] .bg-\[\#1E1E34\],
+[data-theme="light"] .bg-\[\#1A1A2E\] {
+  background-color: var(--dash-surface) !important;
+}
+
+/* Secondary surface elements */
+[data-theme="light"] .dashboard-content .bg-\[\#151523\],
+[data-theme="light"] .dashboard-content .bg-\[\#151525\] {
+  background-color: var(--dash-surface-secondary) !important;
+}
+
+/* --- 2. Typography & Text Colors --- */
+/* High contrast heading / primary text */
+[data-theme="light"] .dashboard-content .text-white,
+[data-theme="light"] .dashboard-content .text-slate-200,
+[data-theme="light"] .dashboard-content .text-slate-300,
+[data-theme="light"] [role="dialog"] .text-white,
+[data-theme="light"] [role="dialog"] .text-slate-200 {
+  color: var(--dash-text) !important;
+}
+
+/* Secondary / Subtitle text */
+[data-theme="light"] .dashboard-content .text-\[\#8E8EA8\],
+[data-theme="light"] .dashboard-content .text-\[\#A1A1B5\],
+[data-theme="light"] .dashboard-content .text-\[\#CBD5E1\],
+[data-theme="light"] .dashboard-content .text-gray-400,
+[data-theme="light"] .dashboard-content .text-slate-400,
+[data-theme="light"] [role="dialog"] .text-slate-400,
+[data-theme="light"] [role="dialog"] .text-gray-400 {
+  color: var(--dash-text-secondary) !important;
+}
+
+/* Muted / Caption text */
+[data-theme="light"] .dashboard-content .text-\[\#707089\],
+[data-theme="light"] .dashboard-content .text-gray-500,
+[data-theme="light"] .dashboard-content .text-slate-500,
+[data-theme="light"] .dashboard-content .text-slate-600 {
+  color: var(--dash-text-muted) !important;
+}
+
+/* --- 3. Borders & Dividers --- */
+[data-theme="light"] .border-white\/\[0\.08\],
+[data-theme="light"] .border-white\/\[0\.07\],
+[data-theme="light"] .border-white\/\[0\.06\],
+[data-theme="light"] .border-white\/\[0\.05\],
+[data-theme="light"] .border-white\/\[0\.04\],
+[data-theme="light"] .border-white\/\[0\.15\],
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-white\/15,
+[data-theme="light"] .border-white\/20,
+[data-theme="light"] .border-white\/5 {
+  border-color: var(--dash-border) !important;
+}
+
+/* Inline rgba borders */
+[data-theme="light"] [style*="border"][style*="rgba(255, 255, 255"] {
+  border-color: var(--dash-border) !important;
+}
+
+/* --- 4. Inputs, Textareas & Form Controls --- */
+[data-theme="light"] .dashboard-content input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="light"] .dashboard-content textarea,
+[data-theme="light"] .dashboard-content select,
+[data-theme="light"] [role="dialog"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="light"] [role="dialog"] textarea,
+[data-theme="light"] [role="dialog"] select {
+  background-color: var(--dash-surface) !important;
+  border-color: var(--dash-border) !important;
+  color: var(--dash-text) !important;
+}
+[data-theme="light"] .dashboard-content input::placeholder,
+[data-theme="light"] .dashboard-content textarea::placeholder,
+[data-theme="light"] [role="dialog"] input::placeholder {
+  color: var(--dash-text-muted) !important;
+}
+
+/* --- 5. Semi-Transparent Background Overrides --- */
+[data-theme="light"] .dashboard-content .bg-white\/5,
+[data-theme="light"] .dashboard-content .bg-white\/10,
+[data-theme="light"] .dashboard-content .bg-white\/\[0\.03\],
+[data-theme="light"] .dashboard-content .bg-white\/\[0\.05\],
+[data-theme="light"] [role="dialog"] .bg-white\/5,
+[data-theme="light"] [role="dialog"] .bg-white\/10 {
+  background-color: var(--dash-input-bg) !important;
+}
+
+/* --- 6. Hover States --- */
+[data-theme="light"] .dashboard-content .hover\:bg-white\/10:hover,
+[data-theme="light"] .dashboard-content .hover\:bg-white\/5:hover,
+[data-theme="light"] .dashboard-content .hover\:bg-white\/\[0\.08\]:hover {
+  background-color: var(--dash-surface-hover) !important;
+}
+[data-theme="light"] .dashboard-content .hover\:text-white:hover {
+  color: var(--dash-text) !important;
+}
+[data-theme="light"] .dashboard-content .hover\:border-white\/\[0\.12\]:hover,
+[data-theme="light"] .dashboard-content .hover\:border-white\/\[0\.15\]:hover,
+[data-theme="light"] .dashboard-content .hover\:border-white\/10:hover,
+[data-theme="light"] .dashboard-content .hover\:border-white\/15:hover {
+  border-color: var(--dash-border-light) !important;
+}
+
+/* --- 7. Divides, Rings & Shadows --- */
+[data-theme="light"] .divide-white\/5 > * + *,
+[data-theme="light"] .divide-white\/10 > * + *,
+[data-theme="light"] .divide-white\/\[0\.06\] > * + * {
+  border-color: var(--dash-border) !important;
+}
+[data-theme="light"] .ring-white\/10,
+[data-theme="light"] .ring-white\/5 {
+  --tw-ring-color: var(--dash-border) !important;
+}
+
+/* --- 8. Glass Card & Surfaces --- */
+[data-theme="light"] .glass-card {
+  background-color: var(--dash-surface) !important;
+  border-color: var(--dash-border) !important;
+}
+
+/* --- 9. Tables --- */
+[data-theme="light"] .dashboard-content table th {
+  background-color: var(--dash-surface-secondary) !important;
+  color: var(--dash-text-secondary) !important;
+  border-color: var(--dash-border) !important;
+}
+[data-theme="light"] .dashboard-content table td {
+  border-color: var(--dash-border) !important;
+  color: var(--dash-text) !important;
+}
+[data-theme="light"] .dashboard-content table tr:hover td {
+  background-color: var(--dash-surface-hover) !important;
+}
+
+/* --- 10. Scrollbar & Selection --- */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--dash-scrollbar-thumb) !important;
+}
+[data-theme="light"] ::selection {
+  background: rgba(124, 58, 237, 0.25);
+  color: #1A1A2E;
+}
+
 @layer base {
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: var(--font-sans);
-    background-color: #0B0B14;
-    color: #F8FAFC;
+    background-color: var(--dash-bg, #0B0B14);
+    color: var(--dash-text, #F8FAFC);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb { background: var(--dash-scrollbar-thumb, rgba(255, 255, 255, 0.12)); border-radius: 9999px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(124, 58, 237, 0.4); }
   ::selection { background: rgba(124, 58, 237, 0.35); color: #FFFFFF; }
 }
@@ -264,8 +493,10 @@
   .kot-printable-area,
   .kot-printable-area *,
   .invoice-printable-area,
-  .invoice-printable-area * {
-    visibility: visible;
+  .invoice-printable-area *,
+  .qr-printable-area,
+  .qr-printable-area * {
+    visibility: visible !important;
   }
 
   .kot-printable-area,
@@ -285,8 +516,46 @@
     box-shadow: none !important;
   }
 
+  #qr-print-modal {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #qr-print-modal > div {
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+    padding: 0 !important;
+  }
+
+  .qr-printable-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 5mm !important;
+    margin: 0 !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    z-index: 99999 !important;
+  }
+
+  .qr-printable-area .qr-card-frame {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    display: inline-block !important;
+    margin-bottom: 12px !important;
+  }
+
   @page {
-    size: 80mm auto;
-    margin: 2mm;
+    size: A4;
+    margin: 8mm;
   }
 }
